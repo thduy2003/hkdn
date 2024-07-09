@@ -9,6 +9,9 @@ import {
 } from 'typeorm';
 import * as argon2 from 'argon2';
 import { Class } from './class.entity';
+import { ClassEnrollment } from './class-enrollment.entity';
+import { ExamResult } from './exam-result.entity';
+import { Feedback } from './feedback.entity';
 
 @Index('users_email_key', ['email'], { unique: true })
 @Index('users_pkey', ['id'], { unique: true })
@@ -62,4 +65,13 @@ export class User {
 
   @OneToMany(() => Class, (classs) => classs.user)
   classes: Class[];
+
+  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.user)
+  classEnrollments: ClassEnrollment[];
+
+  @OneToMany(() => ExamResult, (examResult) => examResult.user)
+  examResults: ExamResult[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.user)
+  feedbacks: Feedback[];
 }

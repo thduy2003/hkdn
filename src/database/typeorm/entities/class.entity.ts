@@ -3,10 +3,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Course } from './course.entity';
+import { ClassEnrollment } from './class-enrollment.entity';
+import { ExamResult } from './exam-result.entity';
 
 @Entity('classes', { schema: 'public' })
 export class Class {
@@ -47,4 +50,10 @@ export class Class {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date | null;
+
+  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.class)
+  classEnrollments: ClassEnrollment[];
+
+  @OneToMany(() => ExamResult, (examResult) => examResult.class)
+  examResults: ExamResult[];
 }

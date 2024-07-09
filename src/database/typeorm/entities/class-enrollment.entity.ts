@@ -1,38 +1,27 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './user.entity';
-import { Course } from './course.entity';
+import { Class } from './class.entity';
 
-@Entity('classes', { schema: 'public' })
-export class Class {
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
-  id: number;
+@Entity('class_enrollment', { schema: 'public' })
+export class ClassEnrollment {
+  @PrimaryColumn()
+  class_id: number;
 
-  @ManyToOne(() => User, (user) => user.classes)
-  @JoinColumn([{ name: 'teacher_id', referencedColumnName: 'id' }])
+  @PrimaryColumn()
+  student_id: number;
+
+  @ManyToOne(() => Class, (classEntity) => classEntity.classEnrollments)
+  @JoinColumn({ name: 'class_id' })
+  class: Class;
+
+  @ManyToOne(() => User, (user) => user.classEnrollments)
+  @JoinColumn({ name: 'student_id' })
   user: User;
 
-  @ManyToOne(() => Course, (course) => course.classes)
-  @JoinColumn([{ name: 'course_id', referencedColumnName: 'id' }])
-  course: Course;
-
-  @Column('character varying', { name: 'name', length: 255 })
-  name: string;
-
   @Column('timestamp with time zone', {
-    name: 'start_date',
+    name: 'enrollment_date',
   })
-  startDate: Date | null;
-
-  @Column('timestamp with time zone', {
-    name: 'end_date',
-  })
-  endDate: Date | null;
+  enrollmentDate: Date | null;
 
   @Column('timestamp with time zone', {
     name: 'created_at',
