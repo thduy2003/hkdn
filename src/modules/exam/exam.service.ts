@@ -69,7 +69,22 @@ export class ExamService {
     if (!isTeacherInClass) {
       throw new BadRequestException('Giáo viên không dạy lớp này');
     }
-
+    const isStudentResultExisted = await this.examResultRepository.findOneBy({
+      exam: {
+        id: data.examId,
+      },
+      user: {
+        id: data.studentId,
+      },
+      class: {
+        id: data.classId,
+      },
+    });
+    if (isStudentResultExisted) {
+      throw new BadRequestException(
+        'Điểm bài thi này đã có, vui lòng cập nhật điểm',
+      );
+    }
     const examResult = this.examResultRepository.create({
       ...data,
       exam: {

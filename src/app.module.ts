@@ -20,12 +20,14 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { AdminModule } from '@modules/admin/admin.module';
 import { ExamModule } from '@modules/exam/exam.module';
+import { FeedbackModule } from '@modules/feedback/feedback.module';
 @Module({
   imports: [
     AuthModule,
     AdminModule,
     UserModule,
     ExamModule,
+    FeedbackModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
