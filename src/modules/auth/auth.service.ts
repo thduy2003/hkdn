@@ -14,7 +14,6 @@ import { CreateAuthDto } from './dto/auth-create.dto';
 import { RegisterResponse } from './response/register.response';
 import { USER_ROLE } from '@shared/enum/user.enum';
 import { ConfigService } from '@nestjs/config';
-import ms from 'ms';
 import { JwtPayload } from './interface/jwt-payload.interface';
 import { Response } from 'express';
 

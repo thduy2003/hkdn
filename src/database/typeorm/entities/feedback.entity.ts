@@ -17,9 +17,6 @@ export class Feedback {
   @Column('text', { name: 'content' })
   content: string;
 
-  @Column('character varying', { name: 'type', length: 255 })
-  type: string;
-
   @ManyToOne(() => ExamResult, (examResult) => examResult.feedbacks)
   @JoinColumn({ name: 'exam_result_id', referencedColumnName: 'id' })
   examResult: ExamResult;

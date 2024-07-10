@@ -19,11 +19,13 @@ import { UnprocessableEntityExceptionFilter } from '@core/filters/unprocess-enti
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { AdminModule } from '@modules/admin/admin.module';
+import { ExamModule } from '@modules/exam/exam.module';
 @Module({
   imports: [
     AuthModule,
     AdminModule,
     UserModule,
+    ExamModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

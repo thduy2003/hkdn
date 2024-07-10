@@ -5,6 +5,8 @@ import {
   UseGuards,
   Get,
   Query,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles } from '@modules/auth/guard/roles.decorator';
@@ -15,6 +17,8 @@ import { UserService } from '@modules/user/user.service';
 import { PageDto } from '@core/pagination/dto/page-dto';
 import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
 import { User } from '@database/typeorm/entities';
+import { CreateClassDto } from '@modules/user/dto/create-class.dto';
+import { Class } from '@database/typeorm/entities/class.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -25,7 +29,7 @@ export class AdminController {
   @UseGuards(AuthGuard, RolesGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    tags: ['user'],
+    tags: ['admin'],
     operationId: 'getAllUser',
     summary: 'Get all user',
     description: 'Get all user',
@@ -40,5 +44,25 @@ export class AdminController {
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<User>> {
     return this.userService.findAll(pageOptionsDto);
+  }
+
+  @Post('class')
+  @Roles(USER_ROLE.EMPLOYEE)
+  @UseGuards(AuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    tags: ['admin'],
+    operationId: 'createClass',
+    summary: 'Create a class',
+    description: 'Create a class',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Successful',
+    type: CreateClassDto,
+  })
+  @ApiBearerAuth('token')
+  async createClass(@Body() data: CreateClassDto): Promise<Class> {
+    return this.userService.createClass(data);
   }
 }

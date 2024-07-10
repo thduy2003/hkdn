@@ -4,7 +4,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
@@ -31,6 +30,12 @@ export class ExamResult {
 
   @Column('decimal', { precision: 6, scale: 2 })
   result: number;
+
+  @Column('timestamp with time zone', {
+    name: 'deadline_feedback',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  deadlineFeedback: Date;
 
   @Column('timestamp with time zone', {
     name: 'created_at',
