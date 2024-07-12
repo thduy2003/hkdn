@@ -64,7 +64,6 @@ export class AuthController {
     return data;
   }
 
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     tags: ['auth'],
@@ -78,12 +77,13 @@ export class AuthController {
     description: 'Successful',
     type: LoginResponse,
   })
-  @ApiBearerAuth('token')
   async handleRefreshToken(
     @Req() request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    console.log('cookies', request);
     const refreshToken = request.cookies['refresh_token'];
+    console.log('resfreshToken', refreshToken);
     return this.authService.refreshToken(refreshToken, response);
   }
 

@@ -25,7 +25,7 @@ export class AdminController {
   constructor(private readonly userService: UserService) {}
 
   @Get('users')
-  @Roles(USER_ROLE.EMPLOYEE)
+  @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.STUDENT)
   @UseGuards(AuthGuard, RolesGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

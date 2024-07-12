@@ -1,1 +1,4 @@
-{}
+{
+    "EMAIL_OR_PASSWORD_IS_INCORRECT": "Email hoặc mật khẩu không đúng",
+    "EXPIRED_TOKEN": "token đã hết hạn"
+}

@@ -1,1 +1,4 @@
-{}
+{
+    "EMAIL_OR_PASSWORD_IS_INCORRECT": "Email or password is incorrect",
+    "EXPIRED_TOKEN": "Expired token"
+}

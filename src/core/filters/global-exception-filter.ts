@@ -10,12 +10,17 @@ import { ConfigService } from '@nestjs/config';
 import { MulterError } from 'multer';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { ProjectLogger } from '../loggers';
+import { I18nContext } from 'nestjs-i18n';
+import { ErrorService } from '@shared/services/error.service';
 
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
   logger = new ProjectLogger('GlobalExceptionsFilter');
 
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private errorService: ErrorService,
+  ) {}
   catch(exception: any, host: ArgumentsHost): any {
     if (exception instanceof HttpException) {
       return this.handleHttpException(exception, host);
@@ -30,6 +35,9 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const customResponse: any = exception.getResponse();
+    const i18n = I18nContext.current(host);
+    const stackTrace = exception.stack;
+
     const message =
       customResponse || response.message || 'Unknown server errors';
 
@@ -40,8 +48,8 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
     }
 
     return response.status(exception.getStatus()).json({
-      error_code: message.message,
-      message: message.error,
+      error_code: exception.getStatus(),
+      message: this.errorService.message(message, i18n, stackTrace),
     });
   }
 
@@ -51,7 +59,9 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
   private handleSystemException(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
+
     let message = exception.message;
+
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     switch (exception.constructor) {
       case EntityNotFoundError:

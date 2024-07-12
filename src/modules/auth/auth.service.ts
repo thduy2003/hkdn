@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthCredentialDto } from './dto/auth-credential.dto';
@@ -48,14 +48,17 @@ export class AuthService {
 
     //update user with refresh token
     await this.userService.updateUserToken(refresh_token, user.id);
-
     //set cookie
     response.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       maxAge: 604800000,
     });
+    const accessToken = await this.jwtService.signAsync(payload);
+    const payloadDecoded: any = await this.jwtService.verifyAsync(accessToken);
+    console.log(payloadDecoded);
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: await this.jwtService.signAsync(payload),
+      expired_at: payloadDecoded.exp,
     };
   }
   createRefreshToken = (payload: JwtPayload) => {
@@ -88,11 +91,11 @@ export class AuthService {
         response.clearCookie('refresh_token');
         //set cookie
         response.cookie('refresh_token', refresh_token, {
-          httpOnly: true,
           maxAge: 604800000,
         });
         return {
-          access_token: this.jwtService.sign(payload),
+          access_token: await this.jwtService.signAsync(payload),
+          expired_at: Date.now() + 10000,
         };
       } else {
         throw new UnauthorizedException(
@@ -137,7 +140,7 @@ export class AuthService {
       email,
     });
     if (!isUserExisted) {
-      throw new UnauthorizedException('LO-102');
+      throw new UnauthorizedException('EMAIL_OR_PASSWORD_IS_INCORRECT');
     }
 
     const isValidPassword = await argon2.verify(
@@ -146,7 +149,7 @@ export class AuthService {
     );
 
     if (!isValidPassword) {
-      throw new UnauthorizedException('LO-102');
+      throw new UnauthorizedException('EMAIL_OR_PASSWORD_IS_INCORRECT');
     }
 
     return isUserExisted;

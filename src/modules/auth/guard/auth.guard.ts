@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ApiConfigService } from '@shared/services/api-config.service';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
@@ -29,6 +29,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+
     const token = this.extractTokenFromHeader(request);
     console.log('token', token);
     if (!token) {
@@ -38,8 +39,12 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.authConfig.secret,
       });
+      console.log('payload', payload);
       request['user'] = payload;
-    } catch {
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('EXPIRED_TOKEN');
+      }
       throw new UnauthorizedException('PROF-104');
     }
     return true;

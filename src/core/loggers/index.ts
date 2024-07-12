@@ -18,7 +18,6 @@ export class ProjectLogger {
   }
 
   info(message: string) {
-    console.log('message', message);
     this.instance.log('info', message);
   }
 
