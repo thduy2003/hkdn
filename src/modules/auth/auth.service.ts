@@ -16,7 +16,7 @@ import { USER_ROLE } from '@shared/enum/user.enum';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './interface/jwt-payload.interface';
 import { Response } from 'express';
-
+import ms from 'ms';
 @Injectable()
 export class AuthService {
   constructor(
@@ -50,12 +50,11 @@ export class AuthService {
     await this.userService.updateUserToken(refresh_token, user.id);
     //set cookie
     response.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      maxAge: 604800000,
+      maxAge: ms(this.configService.get<string>('JWT_REFRESH_EXPIRES_IN')),
+      httpOnly: true, // to prevent JavaScript access
     });
     const accessToken = await this.jwtService.signAsync(payload);
     const payloadDecoded: any = await this.jwtService.verifyAsync(accessToken);
-    console.log(payloadDecoded);
     return {
       access_token: await this.jwtService.signAsync(payload),
       expired_at: payloadDecoded.exp,
@@ -91,11 +90,14 @@ export class AuthService {
         response.clearCookie('refresh_token');
         //set cookie
         response.cookie('refresh_token', refresh_token, {
-          maxAge: 604800000,
+          maxAge: ms(this.configService.get<string>('JWT_REFRESH_EXPIRES_IN')),
         });
+
+        const accessToken = await this.jwtService.signAsync(payload);
+        const payloadDecoded = await this.jwtService.verifyAsync(accessToken);
         return {
-          access_token: await this.jwtService.signAsync(payload),
-          expired_at: Date.now() + 10000,
+          access_token: accessToken,
+          expired_at: payloadDecoded.exp,
         };
       } else {
         throw new UnauthorizedException(

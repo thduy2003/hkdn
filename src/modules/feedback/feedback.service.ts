@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Injectable()
 export class FeedbackService {

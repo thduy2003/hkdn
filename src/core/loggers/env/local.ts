@@ -5,7 +5,7 @@ import { createLogger, Logger as WinstonLogger, format } from 'winston';
 import * as util from 'util';
 import { Format } from 'logform';
 import { LoggerLevel } from '@core/type/logger-level';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { Console } from 'winston/lib/winston/transports';
 /**
  * Custom file logger
