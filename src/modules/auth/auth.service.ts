@@ -17,6 +17,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './interface/jwt-payload.interface';
 import { Response } from 'express';
 import ms from 'ms';
+import { plainToInstance } from 'class-transformer';
+import { UserResponeDto } from '@modules/user/dto/user-response.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -58,6 +60,7 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync(payload),
       expired_at: payloadDecoded.exp,
+      user: plainToInstance(UserResponeDto, user),
     };
   }
   createRefreshToken = (payload: JwtPayload) => {
