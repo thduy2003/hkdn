@@ -12,17 +12,19 @@ import { Class } from './class.entity';
 import { ClassEnrollment } from './class-enrollment.entity';
 import { ExamResult } from './exam-result.entity';
 import { Feedback } from './feedback.entity';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Index('users_email_key', ['email'], { unique: true })
 @Index('users_pkey', ['id'], { unique: true })
 @Entity('users', { schema: 'public' })
 export class User {
+  @ApiPropertyOptional()
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
-
+  @ApiPropertyOptional()
   @Column('character varying', { name: 'name', length: 255 })
   fullName: string;
-
+  @ApiPropertyOptional()
   @Column('character varying', { name: 'email', unique: true, length: 255 })
   email: string;
 

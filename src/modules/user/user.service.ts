@@ -14,30 +14,33 @@ import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { Course } from '@database/typeorm/entities/course.entity';
+import { BaseService } from '@core/services/base.service';
 
 @Injectable()
-export class UserService {
+export class UserService extends BaseService<User>(User) {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    userRepository: Repository<User>,
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
-  ) {}
+  ) {
+    super(userRepository);
+  }
   async createOne(data: User | AuthCredentialDto): Promise<User> {
-    const isUserExisted = await this.userRepository.findOneBy({
+    const isUserExisted = await this.repository.findOneBy({
       email: data.email,
     });
     if (isUserExisted) {
       throw new ConflictException('LO-108');
     }
-    const user = this.userRepository.create(data);
-    return this.userRepository.save(user);
+    const user = this.repository.create(data);
+    return this.repository.save(user);
   }
 
   async createClass(data: CreateClassDto): Promise<Class> {
-    const isTeacherExisted = await this.userRepository.findOneBy({
+    const isTeacherExisted = await this.repository.findOneBy({
       id: data.teacherId,
     });
     if (!isTeacherExisted) {
@@ -62,7 +65,7 @@ export class UserService {
   }
 
   async findOneById(id: number): Promise<User> {
-    const user = await this.userRepository
+    const user = await this.repository
       .createQueryBuilder('users')
       .where('users.id = :id', { id: id })
       .select([
@@ -89,7 +92,7 @@ export class UserService {
       ];
     }
 
-    const [data, count] = await this.userRepository.findAndCount({
+    const [data, count] = await this.repository.findAndCount({
       skip: pageOptionsDto.skip,
       take: pageOptionsDto.page_size,
       order: {
@@ -104,7 +107,7 @@ export class UserService {
   }
 
   async updateUserToken(refreshToken: string, userId: number) {
-    return await this.userRepository
+    return await this.repository
       .createQueryBuilder()
       .update(User)
       .set({
@@ -114,7 +117,7 @@ export class UserService {
       .execute();
   }
   async findUserByToken(refreshToken: string): Promise<User> {
-    return await this.userRepository.findOneBy({
+    return await this.repository.findOneBy({
       refreshToken,
     });
   }
