@@ -45,6 +45,25 @@ export class PageOptionsDto {
   @IsNotEmpty({ message: 'PAG-104' })
   readonly page_size?: number = DEFAULT_LIMIT;
 
+  // @ApiPropertyOptional({
+  //   type: 'object',
+  //   additionalProperties: true,
+  //   example: {
+  //     query: {
+  //       key1: 'value1',
+  //       key2: 'value2',
+  //       key3: 'value3',
+  //     },
+  //   },
+  // })
+  // @Type((options) => options.newObject)
+  // @IsOptional()
+  // query?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  readonly keyword?: string;
+
   get skip(): number {
     return (this.page - 1) * this.page_size;
   }

@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { Course } from '@database/typeorm/entities/course.entity';
@@ -79,18 +79,27 @@ export class UserService {
   }
 
   async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('users');
+    let options: FindOptionsWhere<User>[] = [];
 
-    queryBuilder
-      .select(['users.fullName', 'users.id', 'users.email'])
-      .orderBy('users.createdAt', pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.page_size);
+    if (pageOptionsDto?.keyword) {
+      options = [
+        { fullName: ILike(`%${pageOptionsDto.keyword}%`) },
+        { email: ILike(`%${pageOptionsDto.keyword}%`) },
+        { role: ILike(`%${pageOptionsDto.keyword}%`) },
+      ];
+    }
 
-    const itemCount = await queryBuilder.getCount();
-    const data = await queryBuilder.getMany();
+    const [data, count] = await this.userRepository.findAndCount({
+      skip: pageOptionsDto.skip,
+      take: pageOptionsDto.page_size,
+      order: {
+        createdAt: pageOptionsDto.order || 'DESC',
+      },
+      where: options.length > 0 ? options : undefined,
+      select: ['id', 'fullName', 'email', 'role'],
+    });
 
-    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+    const pageMetaDto = new PageMetaDto({ itemCount: count, pageOptionsDto });
     return new PageDto(data, pageMetaDto);
   }
 
