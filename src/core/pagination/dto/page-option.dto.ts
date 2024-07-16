@@ -19,7 +19,7 @@ export class PageOptionsDto {
   @ApiPropertyOptional({ enum: Order, default: Order.ASC })
   @IsEnum(Order)
   @IsOptional()
-  readonly order?: Order = Order.ASC;
+  order?: Order = Order.ASC;
 
   @ApiPropertyOptional({
     minimum: 1,
@@ -30,7 +30,7 @@ export class PageOptionsDto {
   @Min(1)
   @IsOptional()
   @IsNotEmpty({ message: 'PAG-104' })
-  readonly page?: number = DEFAULT_PAGE;
+  page?: number = DEFAULT_PAGE;
 
   @ApiPropertyOptional({
     minimum: 1,
@@ -43,7 +43,7 @@ export class PageOptionsDto {
   @Max(MAX_LIMIT)
   @IsOptional()
   @IsNotEmpty({ message: 'PAG-104' })
-  readonly page_size?: number = DEFAULT_LIMIT;
+  page_size?: number = DEFAULT_LIMIT;
 
   // @ApiPropertyOptional({
   //   type: 'object',
@@ -62,7 +62,7 @@ export class PageOptionsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  readonly keyword?: string;
+  keyword?: string;
 
   get skip(): number {
     return (this.page - 1) * this.page_size;

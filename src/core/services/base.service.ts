@@ -1,110 +1,104 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
-import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { dashToCamelCase } from '@shared/utils/string-util';
 import { IService } from './interface.service';
 import { PageDto } from '@core/pagination/dto/page-dto';
 import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
+import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
+import { Inject } from '@nestjs/common';
 
-export function BaseService<TEntity>(entityRef: EntityClassOrSchema) {
-  class AbstractBaseService implements IService<TEntity> {
-    repository: Repository<TEntity>;
-    constructor(@InjectRepository(entityRef) _repository: Repository<TEntity>) {
-      this.repository = _repository;
-    }
-    async populateSearchOptions(searchParams: any): Promise<any> {
-      return Promise.resolve({
-        where: searchParams && this.autoMapWhereCriteria(searchParams),
-      });
-    }
-    autoMapWhereCriteria(searchParams) {
-      const where = {};
+export abstract class AbstractBaseService<
+  TEntity,
+  QueryDto extends PageOptionsDto,
+> implements IService<TEntity, QueryDto>
+{
+  repository: Repository<TEntity>;
+  constructor(
+    @Inject()
+    _repository: Repository<TEntity>,
+  ) {
+    this.repository = _repository;
+  }
 
-      if (
-        searchParams &&
-        searchParams.query &&
-        Object.keys(searchParams.query).length > 0
-      ) {
-        for (const key in searchParams.query) {
-          const modelProp = dashToCamelCase(key);
+  protected async populateSearchOptions(
+    searchParams: QueryDto,
+  ): Promise<FindManyOptions> {
+    return Promise.resolve({
+      where: searchParams && this.autoMapWhereCriteria(searchParams),
+    });
+  }
+  protected autoMapWhereCriteria(searchParams: QueryDto) {
+    const where = {};
 
-          // Only add where field if the field name is value
-          if (this.isFieldNameValid(modelProp)) {
-            if (searchParams.query[key]) {
-              let queryValue: any = searchParams.query[key];
+    if (searchParams && Object.keys(searchParams).length > 0) {
+      for (const key in searchParams) {
+        const modelProp = dashToCamelCase(key);
 
-              // Support search over array (IN operation)
-              // Some string fields that does not support IN will throw error?
-              if (
-                queryValue &&
-                typeof queryValue.indexOf === 'function' &&
-                queryValue.indexOf(',') !== -1
-              ) {
-                queryValue = queryValue.split(',');
-              }
+        // Only add where field if the field name is value
+        if (this.isFieldNameValid(modelProp)) {
+          if (searchParams[key]) {
+            let queryValue: any = searchParams[key];
 
-              where[modelProp] = queryValue;
+            // Support search over array (IN operation)
+            // Some string fields that does not support IN will throw error?
+            if (
+              queryValue &&
+              typeof queryValue.indexOf === 'function' &&
+              queryValue.indexOf(',') !== -1
+            ) {
+              queryValue = queryValue.split(',');
             }
+
+            where[modelProp] = queryValue;
           }
         }
       }
-
-      return where;
     }
-    isFieldNameValid(fields: string | Array<string>): boolean {
-      const fieldArray = Array.isArray(fields) ? fields : [fields];
-      let isValid = true;
 
-      fieldArray.forEach((field) => {
-        if (
-          !this.repository.metadata.connection
-            .getMetadata(entityRef)
-            .findColumnWithPropertyName(field)
-        ) {
-          isValid = false;
-        }
-      });
-
-      return isValid;
-    }
-    populateDefaultQueryOptions(options) {
-      let queryOpts: FindManyOptions = {};
-
-      if (!options) {
-        return {};
-      }
-
-      let skip;
-
-      if (options.page && options.take) {
-        skip = (options.page - 1) * options.take;
-      }
-
-      queryOpts = {
-        skip,
-        order: options.sort,
-        where: options.where,
-        select: options.attributes,
-      };
-
-      if (options.query && options.query.include) {
-        queryOpts.relations = options.query.include.split(',');
-      }
-
-      if (options.take !== -1) {
-        queryOpts.take = options.take;
-      }
-
-      return queryOpts;
-    }
-    async find(where: any): Promise<PageDto<TEntity>> {
-      const [data, count] = await this.repository.findAndCount(where);
-      const pageMetaDto = new PageMetaDto({
-        itemCount: count,
-        pageOptionsDto: where.pageOptionsDto,
-      });
-      return new PageDto(data, pageMetaDto);
-    }
+    return where;
   }
-  return AbstractBaseService;
+  isFieldNameValid(fields: string | Array<string>): boolean {
+    const fieldArray = Array.isArray(fields) ? fields : [fields];
+    let isValid = true;
+
+    fieldArray.forEach((field) => {
+      if (!this.repository.metadata.findColumnWithPropertyName(field)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+  async findAll(query: QueryDto): Promise<PageDto<TEntity>> {
+    if (isNaN(query.page)) {
+      query.page = 1;
+    } else {
+      query.page = parseInt(query.page.toString());
+      if (query.page < 1) {
+        query.page = 1;
+      }
+    }
+
+    query.page_size = query.page_size
+      ? parseInt(query.page_size.toString())
+      : 10;
+
+    const pageOptionsDto = new PageOptionsDto();
+    pageOptionsDto.order = query.order;
+    pageOptionsDto.page = query.page;
+    pageOptionsDto.page_size = query.page_size;
+    if (query.keyword) {
+      pageOptionsDto.keyword = query.keyword;
+    }
+    const managerOptions: FindManyOptions = await this.populateSearchOptions(
+      query,
+    );
+    managerOptions.skip = (pageOptionsDto.page - 1) * pageOptionsDto.page_size;
+    managerOptions.take = pageOptionsDto.page_size;
+    const [data, count] = await this.repository.findAndCount(managerOptions);
+    const pageMetaDto = new PageMetaDto({
+      itemCount: count,
+      pageOptionsDto: pageOptionsDto,
+    });
+    return new PageDto(data, pageMetaDto);
+  }
 }

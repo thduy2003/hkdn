@@ -21,6 +21,7 @@ import { UserModule } from './modules/user/user.module';
 import { AdminModule } from '@modules/admin/admin.module';
 import { ExamModule } from '@modules/exam/exam.module';
 import { FeedbackModule } from '@modules/feedback/feedback.module';
+import { ClassEnrollmentModule } from '@modules/class-enrollment/class-enrollment.module';
 @Module({
   imports: [
     AuthModule,
@@ -28,6 +29,7 @@ import { FeedbackModule } from '@modules/feedback/feedback.module';
     UserModule,
     ExamModule,
     FeedbackModule,
+    ClassEnrollmentModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

@@ -4,11 +4,11 @@ import { Class } from './class.entity';
 
 @Entity('class_enrollment', { schema: 'public' })
 export class ClassEnrollment {
-  @PrimaryColumn()
-  class_id: number;
+  @PrimaryColumn({ name: 'class_id' })
+  classId: number;
 
-  @PrimaryColumn()
-  student_id: number;
+  @PrimaryColumn({ name: 'student_id' })
+  studentId: number;
 
   @ManyToOne(() => Class, (classEntity) => classEntity.classEnrollments)
   @JoinColumn({ name: 'class_id' })

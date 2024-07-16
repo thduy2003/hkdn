@@ -10,14 +10,23 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  And,
+  Like,
+  Repository,
+  Or,
+} from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { Course } from '@database/typeorm/entities/course.entity';
-import { BaseService } from '@core/services/base.service';
+import { UserQueryDto } from './dto/user-query.dto';
+import { AbstractBaseService } from '@core/services/base.service';
 
 @Injectable()
-export class UserService extends BaseService<User>(User) {
+export class UserService extends AbstractBaseService<User, UserQueryDto> {
   constructor(
     @InjectRepository(User)
     userRepository: Repository<User>,
@@ -27,6 +36,35 @@ export class UserService extends BaseService<User>(User) {
     private classRepository: Repository<Class>,
   ) {
     super(userRepository);
+  }
+  protected async populateSearchOptions(
+    searchParams: UserQueryDto,
+  ): Promise<FindManyOptions> {
+    const options = await super.populateSearchOptions(searchParams);
+    if (searchParams?.keyword) {
+      options.where = [
+        {
+          ...options.where,
+          fullName: ILike(`%${searchParams.keyword}%`),
+        },
+        {
+          ...options.where,
+          role: ILike(`%${searchParams.keyword}%`),
+        },
+        {
+          ...options.where,
+          email: ILike(`%${searchParams.keyword}%`),
+        },
+      ];
+    }
+    const criteriaOptions: any = {
+      where: options.where,
+      order: {
+        createdAt: searchParams.order || 'DESC',
+      },
+      select: ['id', 'fullName', 'email', 'role'],
+    };
+    return Promise.resolve(criteriaOptions);
   }
   async createOne(data: User | AuthCredentialDto): Promise<User> {
     const isUserExisted = await this.repository.findOneBy({
@@ -79,31 +117,6 @@ export class UserService extends BaseService<User>(User) {
     if (!user) throw new UnauthorizedException('PROF-104');
 
     return user;
-  }
-
-  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {
-    let options: FindOptionsWhere<User>[] = [];
-
-    if (pageOptionsDto?.keyword) {
-      options = [
-        { fullName: ILike(`%${pageOptionsDto.keyword}%`) },
-        { email: ILike(`%${pageOptionsDto.keyword}%`) },
-        { role: ILike(`%${pageOptionsDto.keyword}%`) },
-      ];
-    }
-
-    const [data, count] = await this.repository.findAndCount({
-      skip: pageOptionsDto.skip,
-      take: pageOptionsDto.page_size,
-      order: {
-        createdAt: pageOptionsDto.order || 'DESC',
-      },
-      where: options.length > 0 ? options : undefined,
-      select: ['id', 'fullName', 'email', 'role'],
-    });
-
-    const pageMetaDto = new PageMetaDto({ itemCount: count, pageOptionsDto });
-    return new PageDto(data, pageMetaDto);
   }
 
   async updateUserToken(refreshToken: string, userId: number) {

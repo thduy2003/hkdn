@@ -31,7 +31,6 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const token = this.extractTokenFromHeader(request);
-    console.log('token', token);
     if (!token) {
       throw new UnauthorizedException('PROF-104');
     }
@@ -39,7 +38,6 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.authConfig.secret,
       });
-      console.log('payload', payload);
       request['user'] = payload;
     } catch (error) {
       if (error instanceof TokenExpiredError) {
@@ -52,9 +50,6 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    console.log(request.headers.authorization);
-    console.log(type);
-    console.log(token);
     return type === 'Bearer' ? token : undefined;
   }
 }

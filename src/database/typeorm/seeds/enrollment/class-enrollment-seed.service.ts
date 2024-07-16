@@ -17,8 +17,8 @@ export class ClassEnrollmentSeedService {
       await this.repository.save(
         this.repository.create([
           {
-            class_id: 1,
-            student_id: 2,
+            classId: 1,
+            studentId: 2,
             enrollmentDate: new Date('2022-08-01'),
           },
         ]),

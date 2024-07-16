@@ -23,8 +23,6 @@ export class RolesGuard implements CanActivate {
     );
     const { user } = context.switchToHttp().getRequest();
     const currentUser = await this.userService.findOneById(user.userId);
-    console.log('currentUser', currentUser);
-    console.log('requiredRoles', requiredRoles);
     user['role'] = currentUser.role;
     if (!requiredRoles.some((role) => user.role === role)) {
       throw new ForbiddenException('ADMIN-113');

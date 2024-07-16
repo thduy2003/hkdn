@@ -19,15 +19,18 @@ import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
 import { User } from '@database/typeorm/entities';
 import { CreateClassDto } from '@modules/user/dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
+import { UserQueryDto } from '@modules/user/dto/user-query.dto';
 import { BaseController } from '@core/services/base.controller';
 
 @Controller('admin')
-export class AdminController extends BaseController<User, UserService>(
-  UserService,
+export class AdminController extends BaseController<
   User,
-) {
-  // constructor(private readonly userService: UserService) {
-  // }
+  UserService,
+  UserQueryDto
+>(User, UserService, UserQueryDto) {
+  constructor(private readonly userService: UserService) {
+    super(userService);
+  }
   // @Get('users')
   // @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.STUDENT)
   // @UseGuards(AuthGuard, RolesGuard)
@@ -45,7 +48,7 @@ export class AdminController extends BaseController<User, UserService>(
   // })
   // @ApiBearerAuth('token')
   // async getAllUsers(
-  //   @Query() pageOptionsDto: PageOptionsDto,
+  //   @Query() pageOptionsDto: UserQueryDto,
   // ): Promise<PageDto<User>> {
   //   return this.userService.findAll(pageOptionsDto);
   // }
