@@ -10,7 +10,7 @@ export class PageDto<T> {
   @ApiProperty({ type: () => PageMetaDto })
   readonly meta: PageMetaDto;
 
-  @ApiProperty({ type: () => PageMetaDto })
+  @ApiProperty({ type: () => Number })
   readonly total: number;
 
   constructor(data: T[], meta: PageMetaDto) {

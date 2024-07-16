@@ -9,12 +9,7 @@ export const ROLES_KEY = 'roles';
 export const Roles = (...roles: USER_ROLE[]) => SetMetadata(ROLES_KEY, roles);
 
 export function AuthorizeGuard(roles: USER_ROLE[]) {
-  return applyDecorators(
-    ApiBearerAuth('token'),
-    UseGuards(AuthGuard('jwt')),
-    Roles(...roles),
-    UseGuards(RolesGuard),
-  );
+  return applyDecorators(ApiBearerAuth('token'), UseGuards(AuthGuard('jwt')), Roles(...roles), UseGuards(RolesGuard));
 }
 
 export function AuthenticateGuard() {

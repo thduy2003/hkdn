@@ -1,12 +1,4 @@
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import * as argon2 from 'argon2';
 import { Class } from './class.entity';
 import { ClassEnrollment } from './class-enrollment.entity';
@@ -21,9 +13,11 @@ export class User {
   @ApiPropertyOptional()
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
+
   @ApiPropertyOptional()
   @Column('character varying', { name: 'name', length: 255 })
   fullName: string;
+
   @ApiPropertyOptional()
   @Column('character varying', { name: 'email', unique: true, length: 255 })
   email: string;
@@ -52,6 +46,7 @@ export class User {
   })
   updatedAt: Date | null;
 
+  @ApiPropertyOptional()
   @Column('character varying', { name: 'role', length: 255 })
   role: string;
 

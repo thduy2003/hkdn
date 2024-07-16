@@ -5,11 +5,10 @@ import { PageDto } from '@core/pagination/dto/page-dto';
 import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
 import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
 import { Inject } from '@nestjs/common';
+import { BaseEntity } from './base.entity';
 
-export abstract class AbstractBaseService<
-  TEntity,
-  QueryDto extends PageOptionsDto,
-> implements IService<TEntity, QueryDto>
+export abstract class AbstractBaseService<TEntity, QueryDto extends PageOptionsDto>
+  implements IService<TEntity, QueryDto>
 {
   repository: Repository<TEntity>;
   constructor(
@@ -19,9 +18,7 @@ export abstract class AbstractBaseService<
     this.repository = _repository;
   }
 
-  protected async populateSearchOptions(
-    searchParams: QueryDto,
-  ): Promise<FindManyOptions> {
+  protected async populateSearchOptions(searchParams: QueryDto): Promise<FindManyOptions> {
     return Promise.resolve({
       where: searchParams && this.autoMapWhereCriteria(searchParams),
     });
@@ -40,11 +37,7 @@ export abstract class AbstractBaseService<
 
             // Support search over array (IN operation)
             // Some string fields that does not support IN will throw error?
-            if (
-              queryValue &&
-              typeof queryValue.indexOf === 'function' &&
-              queryValue.indexOf(',') !== -1
-            ) {
+            if (queryValue && typeof queryValue.indexOf === 'function' && queryValue.indexOf(',') !== -1) {
               queryValue = queryValue.split(',');
             }
 
@@ -78,9 +71,7 @@ export abstract class AbstractBaseService<
       }
     }
 
-    query.page_size = query.page_size
-      ? parseInt(query.page_size.toString())
-      : 10;
+    query.page_size = query.page_size ? parseInt(query.page_size.toString()) : 10;
 
     const pageOptionsDto = new PageOptionsDto();
     pageOptionsDto.order = query.order;
@@ -89,9 +80,7 @@ export abstract class AbstractBaseService<
     if (query.keyword) {
       pageOptionsDto.keyword = query.keyword;
     }
-    const managerOptions: FindManyOptions = await this.populateSearchOptions(
-      query,
-    );
+    const managerOptions: FindManyOptions = await this.populateSearchOptions(query);
     managerOptions.skip = (pageOptionsDto.page - 1) * pageOptionsDto.page_size;
     managerOptions.take = pageOptionsDto.page_size;
     const [data, count] = await this.repository.findAndCount(managerOptions);
@@ -101,4 +90,55 @@ export abstract class AbstractBaseService<
     });
     return new PageDto(data, pageMetaDto);
   }
+
+  // protected beforeSave(originalEntity: TEntity, entity: TEntity): Promise<TEntity> {
+  //   return Promise.resolve(entity);
+  // }
+  // private populateSaveOptions(entity: TEntity, action: string) {
+  //   const result = {
+  //     functionName: 'create',
+  //     options: {
+  //       isNewRecord: true,
+  //       where: {},
+  //     },
+  //   };
+
+  //   if (action !== 'create') {
+  //     result.functionName = 'update';
+  //     result.options.where[this.getPrimaryKey()] = entity[this.getPrimaryKey()];
+  //   }
+
+  //   return result;
+  // }
+  // getPrimaryKey(): string {
+  //   return this.repository.metadata.primaryColumns[0].propertyName;
+  // }
+  // async getById(key: any) {
+  //   if (!key) {
+  //     return null;
+  //   }
+
+  //   return this.repository.findOne({
+  //     where: {
+  //       id: key,
+  //     },
+  //   });
+  // }
+  // protected getEntity(entity: TEntity) {
+  //   return this.getById(entity[this.getPrimaryKey()]);
+  // }
+
+  // private async executeSaveEntity(originalEntity: TEntity, entity: TEntity, action: string): Promise<TEntity> {
+  //   const copiedEntity = { ...entity };
+  //   const saveOptions = this.populateSaveOptions(entity, action);
+  //   let previousDataValues;
+  //   if (originalEntity) {
+  //     previousDataValues = (originalEntity as any).dataValues;
+  //   }
+  //   return this.repository.manager.transaction(async (trx) => {
+  //     let savedResult: TEntity;
+  //     // Get latest entity to execute update association
+  //     const currentEntityInstance = await this.getEntity(action === 'create' ? savedResult : entity);
+  //   });
+  // }
 }

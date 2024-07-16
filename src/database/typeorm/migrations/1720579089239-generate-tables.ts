@@ -25,12 +25,8 @@ export class GenerateTables1720579089239 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE "users" ("id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "email" character varying(255) NOT NULL, "password" character varying(255) NOT NULL, "refresh_token" character varying, "created_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "role" character varying(255) NOT NULL, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
     );
-    await queryRunner.query(
-      `CREATE UNIQUE INDEX "users_pkey" ON "users" ("id") `,
-    );
-    await queryRunner.query(
-      `CREATE UNIQUE INDEX "users_email_key" ON "users" ("email") `,
-    );
+    await queryRunner.query(`CREATE UNIQUE INDEX "users_pkey" ON "users" ("id") `);
+    await queryRunner.query(`CREATE UNIQUE INDEX "users_email_key" ON "users" ("email") `);
     await queryRunner.query(
       `ALTER TABLE "class_enrollment" ADD CONSTRAINT "FK_5ffc9d9e53f2e39c60d563d6a20" FOREIGN KEY ("class_id") REFERENCES "classes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
@@ -61,33 +57,15 @@ export class GenerateTables1720579089239 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "classes" DROP CONSTRAINT "FK_bd4c6c725acd427f07264770ceb"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "classes" DROP CONSTRAINT "FK_b34c92e413c4debb6e0f23fed46"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "exam_results" DROP CONSTRAINT "FK_824b2bc6f305480dfff1fd9dcf4"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "exam_results" DROP CONSTRAINT "FK_92164be9660fdf81b1e73c9efa5"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "exam_results" DROP CONSTRAINT "FK_587fe839f813c89f1a4ce0610f0"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "feedbacks" DROP CONSTRAINT "FK_1ab5b5c2f8e75c2a5ba5ee42e59"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "feedbacks" DROP CONSTRAINT "FK_24de535ebdc1f32c5029a6eb01b"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "class_enrollment" DROP CONSTRAINT "FK_012f3597b0b9addf5b5f2bbd6e5"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "class_enrollment" DROP CONSTRAINT "FK_5ffc9d9e53f2e39c60d563d6a20"`,
-    );
+    await queryRunner.query(`ALTER TABLE "classes" DROP CONSTRAINT "FK_bd4c6c725acd427f07264770ceb"`);
+    await queryRunner.query(`ALTER TABLE "classes" DROP CONSTRAINT "FK_b34c92e413c4debb6e0f23fed46"`);
+    await queryRunner.query(`ALTER TABLE "exam_results" DROP CONSTRAINT "FK_824b2bc6f305480dfff1fd9dcf4"`);
+    await queryRunner.query(`ALTER TABLE "exam_results" DROP CONSTRAINT "FK_92164be9660fdf81b1e73c9efa5"`);
+    await queryRunner.query(`ALTER TABLE "exam_results" DROP CONSTRAINT "FK_587fe839f813c89f1a4ce0610f0"`);
+    await queryRunner.query(`ALTER TABLE "feedbacks" DROP CONSTRAINT "FK_1ab5b5c2f8e75c2a5ba5ee42e59"`);
+    await queryRunner.query(`ALTER TABLE "feedbacks" DROP CONSTRAINT "FK_24de535ebdc1f32c5029a6eb01b"`);
+    await queryRunner.query(`ALTER TABLE "class_enrollment" DROP CONSTRAINT "FK_012f3597b0b9addf5b5f2bbd6e5"`);
+    await queryRunner.query(`ALTER TABLE "class_enrollment" DROP CONSTRAINT "FK_5ffc9d9e53f2e39c60d563d6a20"`);
     await queryRunner.query(`DROP INDEX "public"."users_email_key"`);
     await queryRunner.query(`DROP INDEX "public"."users_pkey"`);
     await queryRunner.query(`DROP TABLE "users"`);

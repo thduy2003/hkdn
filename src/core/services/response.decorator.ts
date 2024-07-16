@@ -1,15 +1,8 @@
 import { PageDto } from '@core/pagination/dto/page-dto';
 import { applyDecorators, HttpStatus, Type } from '@nestjs/common';
-import {
-  ApiExtraModels,
-  ApiOkResponse,
-  ApiQuery,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 
-export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(
-  dataDto: DataDto,
-) =>
+export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(dataDto: DataDto) =>
   applyDecorators(
     ApiExtraModels(PageDto, dataDto),
     ApiOkResponse({

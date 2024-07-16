@@ -11,9 +11,7 @@ import { Course } from '@database/typeorm/entities/course.entity';
 import { Class } from '@database/typeorm/entities/class.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Feedback, ExamResult, User, Course, Class]),
-  ],
+  imports: [TypeOrmModule.forFeature([Feedback, ExamResult, User, Course, Class])],
   controllers: [FeedbackController],
   providers: [FeedbackService, JwtService, UserService],
   exports: [FeedbackService],

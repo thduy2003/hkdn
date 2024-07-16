@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { Roles } from '@modules/auth/guard/roles.decorator';
 import { USER_ROLE } from '@shared/enum/user.enum';
@@ -36,10 +29,7 @@ export class ExamController {
     type: EnterResultDto,
   })
   @ApiBearerAuth('token')
-  async createClass(
-    @Body() data: EnterResultDto,
-    @CurrentUser() user: JwtPayload,
-  ): Promise<ExamResult> {
+  async createClass(@Body() data: EnterResultDto, @CurrentUser() user: JwtPayload): Promise<ExamResult> {
     return this.examService.enterResult(data, user);
   }
 }

@@ -1,18 +1,13 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Class } from './class.entity';
 import { Exam } from './exam.entity';
 import { Feedback } from './feedback.entity';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('exam_results', { schema: 'public' })
 export class ExamResult {
+  @ApiPropertyOptional()
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 
@@ -28,9 +23,11 @@ export class ExamResult {
   @JoinColumn({ name: 'student_id', referencedColumnName: 'id' })
   user: User;
 
+  @ApiPropertyOptional()
   @Column('decimal', { precision: 6, scale: 2 })
   result: number;
 
+  @ApiPropertyOptional()
   @Column('timestamp with time zone', {
     name: 'deadline_feedback',
     default: () => 'CURRENT_TIMESTAMP',

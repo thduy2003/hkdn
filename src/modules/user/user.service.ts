@@ -1,24 +1,8 @@
-import { PageDto } from '@core/pagination/dto/page-dto';
-import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
-import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
 import { User } from '@database/typeorm/entities';
 import { AuthCredentialDto } from '@modules/auth/dto/auth-credential.dto';
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  FindManyOptions,
-  FindOptionsWhere,
-  ILike,
-  And,
-  Like,
-  Repository,
-  Or,
-} from 'typeorm';
+import { FindManyOptions, ILike, Repository } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { Course } from '@database/typeorm/entities/course.entity';
@@ -37,9 +21,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
   ) {
     super(userRepository);
   }
-  protected async populateSearchOptions(
-    searchParams: UserQueryDto,
-  ): Promise<FindManyOptions> {
+  protected async populateSearchOptions(searchParams: UserQueryDto): Promise<FindManyOptions> {
     const options = await super.populateSearchOptions(searchParams);
     if (searchParams?.keyword) {
       options.where = [
@@ -106,12 +88,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     const user = await this.repository
       .createQueryBuilder('users')
       .where('users.id = :id', { id: id })
-      .select([
-        'users.id as id',
-        'users.name as name',
-        'users.email as email',
-        'users.role as role',
-      ])
+      .select(['users.id as id', 'users.name as name', 'users.email as email', 'users.role as role'])
       .getRawOne();
 
     if (!user) throw new UnauthorizedException('PROF-104');

@@ -1,11 +1,14 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Class } from './class.entity';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('courses', { schema: 'public' })
 export class Course {
+  @ApiPropertyOptional()
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
 
+  @ApiPropertyOptional()
   @Column('character varying', { name: 'name', length: 255 })
   name: string;
 

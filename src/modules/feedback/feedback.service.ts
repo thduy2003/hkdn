@@ -15,11 +15,7 @@ export class FeedbackService {
     @InjectRepository(ExamResult)
     private examResultRepository: Repository<ExamResult>,
   ) {}
-  async createFeeback(
-    data: CreateFeedbackDto,
-    user: JwtPayload,
-    examResultId: number,
-  ): Promise<Feedback> {
+  async createFeeback(data: CreateFeedbackDto, user: JwtPayload, examResultId: number): Promise<Feedback> {
     const isExamResultExisted = await this.examResultRepository.findOneBy({
       id: examResultId,
     });
@@ -31,17 +27,11 @@ export class FeedbackService {
       user: { id: user.userId },
     });
     if (!isStudentExamResult) {
-      throw new BadRequestException(
-        'Đây không phải là điểm bài kiểm tra của học sinh này',
-      );
+      throw new BadRequestException('Đây không phải là điểm bài kiểm tra của học sinh này');
     }
-    const checkValidDate = moment(
-      isStudentExamResult.deadlineFeedback,
-    ).isBefore(new Date());
+    const checkValidDate = moment(isStudentExamResult.deadlineFeedback).isBefore(new Date());
     if (checkValidDate) {
-      throw new BadRequestException(
-        'Đã quá hạn phúc khảo điểm bài kiểm tra này',
-      );
+      throw new BadRequestException('Đã quá hạn phúc khảo điểm bài kiểm tra này');
     }
     const feedback = this.feedbackRepository.create({
       ...data,

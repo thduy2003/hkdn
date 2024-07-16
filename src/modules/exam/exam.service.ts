@@ -21,10 +21,7 @@ export class ExamService {
     private examResultRepository: Repository<ExamResult>,
   ) {}
 
-  async enterResult(
-    data: EnterResultDto,
-    user: JwtPayload,
-  ): Promise<ExamResult> {
+  async enterResult(data: EnterResultDto, user: JwtPayload): Promise<ExamResult> {
     const isExamExisted = await this.examRepository.findOneBy({
       id: data.examId,
     });
@@ -51,10 +48,7 @@ export class ExamService {
         studentId: data.studentId,
       })
       .andWhere('class.id = :classId', { classId: data.classId })
-      .select([
-        'class.id as classId',
-        'class_enrollment.student_id as studentId',
-      ])
+      .select(['class.id as classId', 'class_enrollment.student_id as studentId'])
       .getRawOne();
     if (!isStudentInClass) {
       throw new BadRequestException('Sinh viên không thuộc lớp này');
@@ -81,9 +75,7 @@ export class ExamService {
       },
     });
     if (isStudentResultExisted) {
-      throw new BadRequestException(
-        'Điểm bài thi này đã có, vui lòng cập nhật điểm',
-      );
+      throw new BadRequestException('Điểm bài thi này đã có, vui lòng cập nhật điểm');
     }
     const examResult = this.examResultRepository.create({
       ...data,
