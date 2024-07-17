@@ -12,7 +12,7 @@ import { User } from '@database/typeorm/entities';
 @Module({
   imports: [TypeOrmModule.forFeature([ClassEnrollment, Course, Class, User])],
   controllers: [ClassEnrollmentController],
-  providers: [ClassEnrollmentService, JwtService, UserService],
+  providers: [ClassEnrollmentService, JwtService],
   exports: [ClassEnrollmentService],
 })
 export class ClassEnrollmentModule {}

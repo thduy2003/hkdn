@@ -10,11 +10,13 @@ import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@modules/user/user.service';
 import { Course } from '@database/typeorm/entities/course.entity';
+import { ClassEnrollment } from '@database/typeorm/entities/class-enrollment.entity';
+import { UserModule } from '@modules/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Exam, Class, User, ExamResult, Course])],
+  imports: [TypeOrmModule.forFeature([Exam, Class, User, ExamResult, Course, ClassEnrollment]), UserModule],
   controllers: [ExamController],
-  providers: [ExamService, JwtService, UserService],
+  providers: [ExamService, JwtService],
   exports: [ExamService],
 })
 export class ExamModule {}

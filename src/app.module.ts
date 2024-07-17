@@ -22,11 +22,13 @@ import { AdminModule } from '@modules/admin/admin.module';
 import { ExamModule } from '@modules/exam/exam.module';
 import { FeedbackModule } from '@modules/feedback/feedback.module';
 import { ClassEnrollmentModule } from '@modules/class-enrollment/class-enrollment.module';
+import { ClassModule } from '@modules/class/class.module';
 @Module({
   imports: [
     AuthModule,
     AdminModule,
     UserModule,
+    ClassModule,
     ExamModule,
     FeedbackModule,
     ClassEnrollmentModule,
@@ -36,8 +38,7 @@ import { ClassEnrollmentModule } from '@modules/class-enrollment/class-enrollmen
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule, SharedModule],
-      useFactory: (configService: ApiConfigService) =>
-        configService.mysqlConfig,
+      useFactory: (configService: ApiConfigService) => configService.mysqlConfig,
       inject: [ApiConfigService, ConfigService],
     }),
     I18nModule.forRoot({
@@ -50,10 +51,7 @@ import { ClassEnrollmentModule } from '@modules/class-enrollment/class-enrollmen
         path: path.join(__dirname, '../src/i18n/'),
         watch: true,
       },
-      resolvers: [
-        { use: QueryResolver, options: ['lang'] },
-        AcceptLanguageResolver,
-      ],
+      resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
     }),
     AuthModule,
     UserModule,

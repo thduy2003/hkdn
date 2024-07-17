@@ -1,6 +1,9 @@
-import { PageDto } from '@core/pagination/dto/page-dto';
-import { applyDecorators, HttpStatus, Type } from '@nestjs/common';
+import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+import { HttpStatus } from '@nestjs/common';
+import { PageDto } from '@core/pagination/dto/page-dto';
+import { ResponseDto } from '@core/query/dto/response-dto';
+import { isString } from 'lodash';
 
 export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(dataDto: DataDto) =>
   applyDecorators(
@@ -8,12 +11,25 @@ export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(dataDto: D
     ApiOkResponse({
       schema: {
         allOf: [
-          { $ref: getSchemaPath(PageDto) },
           {
+            type: 'object',
             properties: {
+              statusCode: {
+                type: 'number',
+                example: 200,
+              },
               data: {
-                type: 'array',
-                items: { $ref: getSchemaPath(dataDto) },
+                allOf: [
+                  { $ref: getSchemaPath(PageDto) },
+                  {
+                    properties: {
+                      data: {
+                        type: 'array',
+                        items: { $ref: getSchemaPath(dataDto) },
+                      },
+                    },
+                  },
+                ],
               },
             },
           },
@@ -23,3 +39,34 @@ export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(dataDto: D
       description: 'Successful',
     }),
   );
+export const ApiOkResponseDefault = <DataDto extends Type<unknown>>(dataDto: DataDto) => {
+  return applyDecorators(
+    ApiExtraModels(ResponseDto, dataDto),
+    ApiOkResponse({
+      schema: {
+        allOf: [
+          {
+            type: 'object',
+            properties: {
+              statusCode: {
+                type: 'number',
+                example: 200,
+              },
+              data:
+                dataDto.name === 'String'
+                  ? {
+                      type: 'string',
+                      example: 'Example',
+                    }
+                  : {
+                      $ref: getSchemaPath(dataDto),
+                    },
+            },
+          },
+        ],
+      },
+      status: HttpStatus.OK,
+      description: 'Successful',
+    }),
+  );
+};

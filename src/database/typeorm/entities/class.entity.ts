@@ -4,12 +4,13 @@ import { Course } from './course.entity';
 import { ClassEnrollment } from './class-enrollment.entity';
 import { ExamResult } from './exam-result.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BaseEntity } from './base.entity';
 
 @Entity('classes', { schema: 'public' })
-export class Class {
-  @ApiPropertyOptional()
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
-  id: number;
+export class Class extends BaseEntity {
+  // @ApiPropertyOptional()
+  // @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  // id: number;
 
   @ManyToOne(() => User, (user) => user.classes)
   @JoinColumn([{ name: 'teacher_id', referencedColumnName: 'id' }])
@@ -49,7 +50,7 @@ export class Class {
   })
   updatedAt: Date | null;
 
-  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.class)
+  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.class, { cascade: true })
   classEnrollments: ClassEnrollment[];
 
   @OneToMany(() => ExamResult, (examResult) => examResult.class)

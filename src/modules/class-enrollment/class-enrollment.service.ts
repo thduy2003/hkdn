@@ -32,6 +32,7 @@ export class ClassEnrollmentService extends AbstractBaseService<ClassEnrollment,
         class: true,
       },
       select: {
+        id: true,
         classId: true,
         studentId: true,
         enrollmentDate: true,

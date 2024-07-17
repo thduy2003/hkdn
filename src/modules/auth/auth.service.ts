@@ -1,10 +1,6 @@
 import { User } from '@database/typeorm/entities';
 import { UserService } from '@modules/user/user.service';
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -103,14 +99,10 @@ export class AuthService {
           expired_at: payloadDecoded.exp,
         };
       } else {
-        throw new UnauthorizedException(
-          `Refresh token không hợp lệ, vui lòng login`,
-        );
+        throw new UnauthorizedException(`Refresh token không hợp lệ, vui lòng login`);
       }
     } catch {
-      throw new UnauthorizedException(
-        `Refresh token không hợp lệ, vui lòng login`,
-      );
+      throw new UnauthorizedException(`Refresh token không hợp lệ, vui lòng login`);
     }
   }
 
@@ -124,12 +116,7 @@ export class AuthService {
     const user = await this.userRepository
       .createQueryBuilder('users')
       .where('users.id = :id', { id: userId })
-      .select([
-        'users.id as id',
-        'users.name as name',
-        'users.email as email',
-        'users.role as role',
-      ])
+      .select(['users.id as id', 'users.name as name', 'users.email as email', 'users.role as role'])
       .getRawOne();
 
     if (!user) throw new UnauthorizedException('PROF-104');
@@ -137,9 +124,7 @@ export class AuthService {
     return user;
   }
 
-  async validateAndGetUser(
-    authCredentialDto: AuthCredentialDto,
-  ): Promise<User> {
+  async validateAndGetUser(authCredentialDto: AuthCredentialDto): Promise<User> {
     const { email, password } = authCredentialDto;
     const isUserExisted = await this.userRepository.findOneBy({
       email,
@@ -148,10 +133,7 @@ export class AuthService {
       throw new UnauthorizedException('EMAIL_OR_PASSWORD_IS_INCORRECT');
     }
 
-    const isValidPassword = await argon2.verify(
-      isUserExisted.password,
-      password,
-    );
+    const isValidPassword = await argon2.verify(isUserExisted.password, password);
 
     if (!isValidPassword) {
       throw new UnauthorizedException('EMAIL_OR_PASSWORD_IS_INCORRECT');

@@ -5,14 +5,15 @@ import { ClassEnrollment } from './class-enrollment.entity';
 import { ExamResult } from './exam-result.entity';
 import { Feedback } from './feedback.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BaseEntity } from './base.entity';
 
 @Index('users_email_key', ['email'], { unique: true })
 @Index('users_pkey', ['id'], { unique: true })
 @Entity('users', { schema: 'public' })
-export class User {
-  @ApiPropertyOptional()
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
-  id: number;
+export class User extends BaseEntity {
+  // @ApiPropertyOptional()
+  // @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  // id: number;
 
   @ApiPropertyOptional()
   @Column('character varying', { name: 'name', length: 255 })
@@ -63,7 +64,7 @@ export class User {
   @OneToMany(() => Class, (classs) => classs.user)
   classes: Class[];
 
-  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.user)
+  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.user, { cascade: true })
   classEnrollments: ClassEnrollment[];
 
   @OneToMany(() => ExamResult, (examResult) => examResult.user)

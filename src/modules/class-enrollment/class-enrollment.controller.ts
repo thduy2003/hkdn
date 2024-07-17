@@ -11,14 +11,8 @@ import { BaseController } from '@core/services/base.controller';
 import { EnrollClassDto } from './dto/enroll-class.dto';
 
 @Controller('')
-export class ClassEnrollmentController extends BaseController<
-  ClassEnrollment,
-  ClassEnrollmentService,
-  ClassEnrollmentQueryDto
->(ClassEnrollment, ClassEnrollmentService, ClassEnrollmentQueryDto, 'class-enrollments') {
-  constructor(private readonly classEnrollmentService: ClassEnrollmentService) {
-    super(classEnrollmentService);
-  }
+export class ClassEnrollmentController {
+  constructor(private readonly classEnrollmentService: ClassEnrollmentService) {}
   // @Get('')
   // @Roles(USER_ROLE.EMPLOYEE)
   // @UseGuards(AuthGuard, RolesGuard)
@@ -38,23 +32,23 @@ export class ClassEnrollmentController extends BaseController<
   // async getAll(@Query() pageOptionsDto: ClassEnrollmentQueryDto): Promise<PageDto<ClassEnrollment>> {
   //   return this.classEnrollmentService.findAll(pageOptionsDto);
   // }
-  @Post('class-enrollment')
-  @Roles(USER_ROLE.EMPLOYEE)
-  @UseGuards(AuthGuard, RolesGuard)
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    tags: ['classenrollment'],
-    operationId: 'enrollClass',
-    summary: 'Enroll class',
-    description: 'Enroll class',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Successful',
-    type: ClassEnrollment,
-  })
-  @ApiBearerAuth('token')
-  async createClass(@Body() data: EnrollClassDto): Promise<ClassEnrollment> {
-    return this.classEnrollmentService.enrollClass(data);
-  }
+  // @Post('class-enrollment')
+  // @Roles(USER_ROLE.EMPLOYEE)
+  // @UseGuards(AuthGuard, RolesGuard)
+  // @HttpCode(HttpStatus.CREATED)
+  // @ApiOperation({
+  //   tags: ['classenrollment'],
+  //   operationId: 'enrollClass',
+  //   summary: 'Enroll class',
+  //   description: 'Enroll class',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.CREATED,
+  //   description: 'Successful',
+  //   type: ClassEnrollment,
+  // })
+  // @ApiBearerAuth('token')
+  // async createClass(@Body() data: EnrollClassDto): Promise<ClassEnrollment> {
+  //   return this.classEnrollmentService.enrollClass(data);
+  // }
 }

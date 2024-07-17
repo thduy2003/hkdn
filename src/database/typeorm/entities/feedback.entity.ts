@@ -2,12 +2,13 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { ExamResult } from './exam-result.entity';
 import { User } from './user.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BaseEntity } from './base.entity';
 
 @Entity('feedbacks', { schema: 'public' })
-export class Feedback {
-  @ApiPropertyOptional()
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
-  id: number;
+export class Feedback extends BaseEntity {
+  // @ApiPropertyOptional()
+  // @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  // id: number;
 
   @ApiPropertyOptional()
   @Column('text', { name: 'content' })

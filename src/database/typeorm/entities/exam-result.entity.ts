@@ -4,12 +4,13 @@ import { Class } from './class.entity';
 import { Exam } from './exam.entity';
 import { Feedback } from './feedback.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BaseEntity } from './base.entity';
 
 @Entity('exam_results', { schema: 'public' })
-export class ExamResult {
-  @ApiPropertyOptional()
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
-  id: number;
+export class ExamResult extends BaseEntity {
+  // @ApiPropertyOptional()
+  // @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
+  // id: number;
 
   @ManyToOne(() => Exam, (exam) => exam.examResults)
   @JoinColumn({ name: 'exam_id', referencedColumnName: 'id' })

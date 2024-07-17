@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Req,
-  Request,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/auth-create.dto';
 import { RegisterResponse } from './response/register.response';
@@ -56,10 +45,7 @@ export class AuthController {
     description: 'Successful',
     type: LoginResponse,
   })
-  async login(
-    @Body() body: AuthCredentialDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<LoginResponse> {
+  async login(@Body() body: AuthCredentialDto, @Res({ passthrough: true }) res: Response): Promise<LoginResponse> {
     const data = await this.authService.login(body, res);
     return data;
   }
@@ -77,10 +63,7 @@ export class AuthController {
     description: 'Successful',
     type: LoginResponse,
   })
-  async handleRefreshToken(
-    @Req() request,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async handleRefreshToken(@Req() request, @Res({ passthrough: true }) response: Response) {
     const refreshToken = request.cookies['refresh_token'];
     return this.authService.refreshToken(refreshToken, response);
   }
@@ -96,10 +79,7 @@ export class AuthController {
   @Get('profile')
   @ApiBearerAuth('token')
   async getProfileUser(@Request() req): Promise<UserResponeDto> {
-    return plainToInstance(
-      UserResponeDto,
-      await this.authService.getUserById(req.user['userId']),
-    );
+    return plainToInstance(UserResponeDto, await this.authService.getUserById(req.user['userId']));
   }
 
   @UseGuards(AuthGuard)
@@ -116,10 +96,7 @@ export class AuthController {
     description: 'Successful',
   })
   @ApiBearerAuth('token')
-  async handleLogout(
-    @CurrentUser() user: JwtPayload,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async handleLogout(@CurrentUser() user: JwtPayload, @Res({ passthrough: true }) response: Response) {
     return this.authService.logout(user, response);
   }
 }

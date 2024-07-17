@@ -9,11 +9,13 @@ import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
 import { User } from '@database/typeorm/entities';
 import { Course } from '@database/typeorm/entities/course.entity';
 import { Class } from '@database/typeorm/entities/class.entity';
+import { ClassEnrollment } from '@database/typeorm/entities/class-enrollment.entity';
+import { UserModule } from '@modules/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Feedback, ExamResult, User, Course, Class])],
+  imports: [TypeOrmModule.forFeature([Feedback, ExamResult, User, Course, Class, ClassEnrollment]), UserModule],
   controllers: [FeedbackController],
-  providers: [FeedbackService, JwtService, UserService],
+  providers: [FeedbackService, JwtService],
   exports: [FeedbackService],
 })
 export class FeedbackModule {}
