@@ -20,9 +20,7 @@ export class LocalLogger implements Logger {
     this.loggerOptions = loggerOptions;
     this.customFormat = format.printf(
       ({ timestamp, level, message, ...extra }) =>
-        `${timestamp} [${name}][${level}]: ${message} ${
-          Object.keys(extra).length ? util.inspect(extra) : ''
-        }`,
+        `${timestamp} [${name}][${level}]: ${message} ${Object.keys(extra).length ? util.inspect(extra) : ''}`,
     );
 
     const options = (filename: string) => {
@@ -61,25 +59,15 @@ export class LocalLogger implements Logger {
    * Logs query and parameters used in it.
    */
   logQuery(query: string, parameters?: any[], _queryRunner?: QueryRunner) {
-    const message = `${query} - ${
-      parameters ? JSON.stringify(parameters) : ''
-    }`;
-
+    const message = `${query} - ${parameters ? JSON.stringify(parameters) : ''}`;
     if (this.isLevelAllowed('query')) this.queryWrite('info', message);
   }
 
   /**
    * Logs query that is failed.
    */
-  logQueryError(
-    error: string | Error,
-    query: string,
-    parameters?: any[],
-    _queryRunner?: QueryRunner,
-  ) {
-    const message = `${query} - ${
-      parameters ? JSON.stringify(parameters) : ''
-    } - Error: ${error}`;
+  logQueryError(error: string | Error, query: string, parameters?: any[], _queryRunner?: QueryRunner) {
+    const message = `${query} - ${parameters ? JSON.stringify(parameters) : ''} - Error: ${error}`;
 
     if (this.isLevelAllowed('error')) {
       this.coreWrite('error', message);
@@ -89,15 +77,9 @@ export class LocalLogger implements Logger {
   /**
    * Logs query that is slow
    */
-  logQuerySlow(
-    time: number,
-    query: string,
-    parameters?: any[],
-    _queryRunner?: QueryRunner,
-  ) {
-    const message = `${query} - ${time} - ${
-      parameters ? JSON.stringify(parameters) : ''
-    }`;
+  logQuerySlow(time: number, query: string, parameters?: any[], _queryRunner?: QueryRunner) {
+    const message = `${query} - ${time} - ${parameters ? JSON.stringify(parameters) : ''}`;
+
     if (this.isLevelAllowed('warn')) this.queryWrite('warn', message);
   }
 
@@ -118,11 +100,7 @@ export class LocalLogger implements Logger {
   /**
    * Perform logging using given logger, or by default to the console. Log has its own level and message.
    */
-  log(
-    level: 'log' | 'info' | 'warn' | 'error',
-    message: any,
-    _queryRunner?: QueryRunner,
-  ) {
+  log(level: 'log' | 'info' | 'warn' | 'error', message: any, _queryRunner?: QueryRunner) {
     switch (level) {
       case 'log':
         if (this.isLevelAllowed('log')) this.coreWrite(level, message);
@@ -163,9 +141,7 @@ export class LocalLogger implements Logger {
 
   private isLevelAllowed(level: LoggerLevel) {
     return (
-      this.loggerOptions === 'all' ||
-      (Array.isArray(this.loggerOptions) &&
-        this.loggerOptions.indexOf(level) !== -1)
+      this.loggerOptions === 'all' || (Array.isArray(this.loggerOptions) && this.loggerOptions.indexOf(level) !== -1)
     );
   }
 }

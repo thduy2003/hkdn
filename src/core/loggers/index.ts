@@ -8,10 +8,7 @@ export class ProjectLogger {
   private configService = new ConfigService();
   private readonly instance: any;
   constructor(name: string) {
-    this.instance = LoggerFactory.getInstance(
-      this.configService.get('SYSTEM_LOG_INFO'),
-      name,
-    );
+    this.instance = LoggerFactory.getInstance(this.configService.get('SYSTEM_LOG_INFO'), name);
   }
   exception(message: string) {
     this.instance.log('error', message);

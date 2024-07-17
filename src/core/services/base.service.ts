@@ -23,6 +23,9 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
       where: searchParams && this.autoMapWhereCriteria(searchParams),
     });
   }
+  protected async populateReturnedData(entity: TEntity[]): Promise<TEntity[]> {
+    return Promise.resolve(entity);
+  }
   protected autoMapWhereCriteria(searchParams: QueryDto) {
     const where = {};
 
@@ -83,14 +86,13 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     const managerOptions: FindManyOptions = await this.populateSearchOptions(query);
     managerOptions.skip = (pageOptionsDto.page - 1) * pageOptionsDto.page_size;
     managerOptions.take = pageOptionsDto.page_size;
-    console.log('data', managerOptions);
-
     const [data, count] = await this.repository.findAndCount(managerOptions);
+    const returnedData = await this.populateReturnedData(data);
     const pageMetaDto = new PageMetaDto({
       itemCount: count,
       pageOptionsDto: pageOptionsDto,
     });
-    return new PageDto(data, pageMetaDto);
+    return new PageDto(returnedData, pageMetaDto);
   }
   protected populateEntity(existingEntity: TEntity, entity: TEntity, action: string): Promise<any> {
     return Promise.resolve(entity);

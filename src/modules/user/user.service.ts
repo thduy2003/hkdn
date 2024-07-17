@@ -117,7 +117,6 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     const enrolledClass = existedUser.classEnrollments.find((classEnrollment) => {
       return classEnrollment.class.id === classId;
     });
-    console.log('e', enrolledClass);
     if (enrolledClass) {
       throw new BadRequestException(
         `Student: ${existedUser.fullName} has already enrolled in the class: ${enrolledClass.class.name}`,

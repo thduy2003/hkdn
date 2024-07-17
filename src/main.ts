@@ -1,9 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  ExpressAdapter,
-  NestExpressApplication,
-} from '@nestjs/platform-express';
+import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ProjectLogger } from '@core/loggers';
 import { ValidationPipe } from '@nestjs/common';
@@ -18,10 +15,7 @@ import { ErrorService } from '@shared/services/error.service';
 const logger = new ProjectLogger('bootstrap');
 
 async function bootstrap(): Promise<NestExpressApplication> {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    new ExpressAdapter(),
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
   app.setGlobalPrefix('/api');
   app.use(requestLoggerMiddleware);
   const reflector = app.get(Reflector);

@@ -36,8 +36,8 @@ export class ApiConfigService {
       entities,
       autoLoadEntities: true,
       synchronize: false,
-      maxQueryExecutionTime:
-        this.configService.get<number>('DB_MAX_QUERY_TIME'),
+      maxQueryExecutionTime: this.configService.get<number>('DB_MAX_QUERY_TIME'),
+      logging: 'all',
     };
   }
 
