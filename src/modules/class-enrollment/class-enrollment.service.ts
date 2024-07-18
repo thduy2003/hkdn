@@ -74,7 +74,7 @@ export class ClassEnrollmentService extends AbstractBaseService<ClassEnrollment,
       class: {
         id: data.classId,
       },
-      user: {
+      student: {
         id: data.studentId,
       },
       enrollmentDate: new Date(),

@@ -1,17 +1,18 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Class } from './class.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseEntity } from './base.entity';
+import { ExamResult } from './exam-result.entity';
 
 @Entity('class_enrollment', { schema: 'public' })
 export class ClassEnrollment extends BaseEntity {
   @ApiPropertyOptional()
-  @PrimaryColumn({ name: 'class_id' })
+  @Column({ name: 'class_id' })
   classId: number;
 
   @ApiPropertyOptional()
-  @PrimaryColumn({ name: 'student_id' })
+  @Column({ name: 'student_id' })
   studentId: number;
 
   //use arrow function to resolve circular dependencies
@@ -22,9 +23,14 @@ export class ClassEnrollment extends BaseEntity {
 
   //use arrow function to resolve circular dependencies
   @ApiPropertyOptional({ type: () => User })
-  @ManyToOne(() => User, (user) => user.classEnrollments)
+  @ManyToOne(() => User, (user) => user.classEnrollments, {
+    orphanedRowAction: 'delete',
+  })
   @JoinColumn({ name: 'student_id' })
-  user: User;
+  student: User;
+
+  @OneToMany(() => ExamResult, (examResult) => examResult.classEnrollment, { cascade: true })
+  examResults: ExamResult[];
 
   @ApiPropertyOptional()
   @Column('timestamp with time zone', {

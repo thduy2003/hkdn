@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +8,7 @@ import { ClassEnrollment } from '@database/typeorm/entities/class-enrollment.ent
 import { ClassModule } from '@modules/class/class.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, ClassEnrollment]), ClassModule],
+  imports: [TypeOrmModule.forFeature([User, ClassEnrollment]), forwardRef(() => ClassModule)],
   controllers: [UserController],
   providers: [UserService, JwtService],
   exports: [UserService],

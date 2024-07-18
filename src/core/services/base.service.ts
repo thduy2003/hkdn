@@ -64,7 +64,7 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
 
     return isValid;
   }
-  async findAll(query: QueryDto): Promise<PageDto<TEntity>> {
+  populateDefaultSearch(query: QueryDto): PageOptionsDto {
     if (isNaN(query.page)) {
       query.page = 1;
     } else {
@@ -83,14 +83,18 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     if (query.keyword) {
       pageOptionsDto.keyword = query.keyword;
     }
+    return pageOptionsDto;
+  }
+  async findAll(query: QueryDto): Promise<PageDto<TEntity>> {
+    const searchOptions = this.populateDefaultSearch(query);
     const managerOptions: FindManyOptions = await this.populateSearchOptions(query);
-    managerOptions.skip = (pageOptionsDto.page - 1) * pageOptionsDto.page_size;
-    managerOptions.take = pageOptionsDto.page_size;
+    managerOptions.skip = (searchOptions.page - 1) * searchOptions.page_size;
+    managerOptions.take = searchOptions.page_size;
     const [data, count] = await this.repository.findAndCount(managerOptions);
     const returnedData = await this.populateReturnedData(data);
     const pageMetaDto = new PageMetaDto({
       itemCount: count,
-      pageOptionsDto: pageOptionsDto,
+      pageOptionsDto: searchOptions,
     });
     return new PageDto(returnedData, pageMetaDto);
   }

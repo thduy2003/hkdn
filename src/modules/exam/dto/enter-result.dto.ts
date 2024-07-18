@@ -12,22 +12,6 @@ export class EnterResultDto {
 
   @ApiProperty({
     type: Number,
-    example: 1,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  classId: number;
-
-  @ApiProperty({
-    type: Number,
-    example: 1,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  studentId: number;
-
-  @ApiProperty({
-    type: Number,
     example: 8.8,
   })
   @IsNotEmpty()
@@ -36,6 +20,7 @@ export class EnterResultDto {
 
   @ApiProperty({
     type: Date,
+    example: new Date(),
   })
   @IsNotEmpty()
   @IsDateString()

@@ -1,16 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
 import moment from 'moment';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { AbstractBaseService } from '@core/services/base.service';
 import { ClassQueryDto } from './dto/class-query.dto';
+import { ClassEnrollment } from '@database/typeorm/entities/class-enrollment.entity';
+import { User } from '@database/typeorm/entities';
+import { UserService } from '@modules/user/user.service';
+import { PageDto } from '@core/pagination/dto/page-dto';
+import { StudentsQueryDto } from './dto/students-query.dto';
+import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
+import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
 
 @Injectable()
 export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
   constructor(
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
   ) {
     super(classRepository);
   }
@@ -82,10 +90,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
         createdAt: 'DESC',
       },
       relations: {
-        user: true,
-        classEnrollments: {
-          user: true,
-        },
+        teacher: true,
       },
       select: {
         id: true,
@@ -93,26 +98,47 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
         startDate: true,
         createdAt: true,
         endDate: true,
-        user: {
+        teacher: {
           fullName: true,
-        },
-        classEnrollments: {
-          id: true,
-          user: {
-            fullName: true,
-          },
         },
       },
     });
 
-    // data.classEnrollments = data.classEnrollments.map((item) => {
-    //   return {
-    //     user: {
-    //       fullName: item.user.fullName,
-    //     },
-    //   };
-    // });
-
     return data;
+  }
+  async getStudentsInClass(id: number, query: StudentsQueryDto): Promise<PageDto<User>> {
+    const students = await this.userService.getStudentsInClass(id, query);
+    return students;
+  }
+  async enterResult(data: EnterResultDto, classId: number, studentId: number): Promise<string> {
+    const classExisted = await this.repository.findOne({
+      where: { id: classId },
+      relations: {
+        classEnrollments: {
+          examResults: true,
+        },
+      },
+    });
+    if (!classExisted) {
+      throw new BadRequestException('This class does not exist');
+    }
+    const enrolledStudent = classExisted.classEnrollments.find((classEnrollment) => {
+      return classEnrollment.studentId === studentId;
+    });
+
+    if (!enrolledStudent) {
+      throw new BadRequestException(`This student has not enrolled in the class: ${classExisted.name}`);
+    }
+    const newResult = await this.repository.manager.getRepository(ExamResult).create({
+      exam: {
+        id: data.examId,
+      },
+      result: data.result,
+      deadlineFeedback: data.deadlineFeedback,
+    });
+    enrolledStudent.examResults.push(newResult);
+
+    await this.repository.save(classExisted);
+    return 'Entered result successfully';
   }
 }

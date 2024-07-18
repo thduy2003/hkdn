@@ -23,7 +23,7 @@ export class ClassSeedService {
             course: {
               id: 1,
             },
-            user: {
+            teacher: {
               id: 3,
             },
           },
@@ -34,7 +34,7 @@ export class ClassSeedService {
             course: {
               id: 2,
             },
-            user: {
+            teacher: {
               id: 3,
             },
           },

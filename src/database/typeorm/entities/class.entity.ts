@@ -14,7 +14,7 @@ export class Class extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.classes)
   @JoinColumn([{ name: 'teacher_id', referencedColumnName: 'id' }])
-  user: User;
+  teacher: User;
 
   @ManyToOne(() => Course, (course) => course.classes)
   @JoinColumn([{ name: 'course_id', referencedColumnName: 'id' }])
@@ -53,6 +53,6 @@ export class Class extends BaseEntity {
   @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.class, { cascade: true })
   classEnrollments: ClassEnrollment[];
 
-  @OneToMany(() => ExamResult, (examResult) => examResult.class)
-  examResults: ExamResult[];
+  // @OneToMany(() => ExamResult, (examResult) => examResult.class)
+  // examResults: ExamResult[];
 }

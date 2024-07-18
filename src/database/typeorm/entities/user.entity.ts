@@ -61,14 +61,14 @@ export class User extends BaseEntity {
     this.password = await argon2.hash(this.password);
   }
 
-  @OneToMany(() => Class, (classs) => classs.user)
+  @OneToMany(() => Class, (classs) => classs.teacher)
   classes: Class[];
 
-  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.user, { cascade: true })
+  @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.student, { cascade: true })
   classEnrollments: ClassEnrollment[];
 
-  @OneToMany(() => ExamResult, (examResult) => examResult.user)
-  examResults: ExamResult[];
+  // @OneToMany(() => ExamResult, (examResult) => examResult.user)
+  // examResults: ExamResult[];
 
   @OneToMany(() => Feedback, (feedback) => feedback.user)
   feedbacks: Feedback[];

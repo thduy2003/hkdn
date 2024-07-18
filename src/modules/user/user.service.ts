@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, ILike, Repository } from 'typeorm';
+import { Brackets, FindManyOptions, ILike, Repository } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { Course } from '@database/typeorm/entities/course.entity';
@@ -18,6 +18,10 @@ import { AbstractBaseService } from '@core/services/base.service';
 import { EnrollClassDto } from './dto/enroll-class.dto';
 import { ClassEnrollment } from '@database/typeorm/entities/class-enrollment.entity';
 import { ClassService } from '@modules/class/class.service';
+import { PageDto } from '@core/pagination/dto/page-dto';
+import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
+import { StudentsQueryDto } from '@modules/class/dto/students-query.dto';
+import { UpdateEnrollmentDateDto } from './dto/update-enroll-date.dto';
 
 @Injectable()
 export class UserService extends AbstractBaseService<User, UserQueryDto> {
@@ -122,25 +126,76 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
         `Student: ${existedUser.fullName} has already enrolled in the class: ${enrolledClass.class.name}`,
       );
     }
+    const classExisted = await this.classService.findOne(classId);
+    if (!classExisted) {
+      throw new BadRequestException('This class does not exist');
+    }
+    const newEnrollment = new ClassEnrollment();
+    newEnrollment.classId = classId;
+    newEnrollment.enrollmentDate = new Date();
+    existedUser.classEnrollments.push(newEnrollment);
+    await this.repository.save(existedUser);
 
+    return `Enrolled class: ${classExisted.name} successfully`;
+  }
+  async unEnrollClass(data: EnrollClassDto, classId: number): Promise<string> {
+    const existedUser = await this.repository.findOne({
+      where: { id: data.studentId },
+      relations: { classEnrollments: { class: true } },
+    });
+
+    if (!existedUser) {
+      throw new BadRequestException('This student does not exist');
+    }
+    const enrolledClass = existedUser.classEnrollments.find((classEnrollment) => {
+      return classEnrollment.class.id === classId;
+    });
+    if (!enrolledClass) {
+      throw new BadRequestException(
+        `Student: ${existedUser.fullName} has not enrolled in the class: ${enrolledClass.class.name}`,
+      );
+    }
     const classExisted = await this.classService.findOne(classId);
     if (!classExisted) {
       throw new BadRequestException('This class does not exist');
     }
 
-    const newEnrollment = this.classEnrollmentRepository.create({
-      classId,
-      studentId: data.studentId,
-      enrollmentDate: new Date(),
+    existedUser.classEnrollments = existedUser.classEnrollments.filter((item) => {
+      return item.classId !== classId;
     });
-
-    existedUser.classEnrollments.push(newEnrollment);
-
     await this.repository.save(existedUser);
 
-    return `Enrolled class: ${classExisted.name} successfully`;
+    return `UnEnrolled class: ${classExisted.name} successfully`;
   }
+  async updateEnrollmentDate(data: UpdateEnrollmentDateDto, classId: number): Promise<string> {
+    const existedUser = await this.repository.findOne({
+      where: { id: data.studentId },
+      relations: { classEnrollments: { class: true } },
+    });
 
+    if (!existedUser) {
+      throw new BadRequestException('This student does not exist');
+    }
+    const enrolledClass = existedUser.classEnrollments.find((classEnrollment) => {
+      return classEnrollment.class.id === classId;
+    });
+    if (!enrolledClass) {
+      throw new BadRequestException(`Student: ${existedUser.fullName} has not enrolled in the classId: ${classId}`);
+    }
+    const classExisted = await this.classService.findOne(classId);
+    if (!classExisted) {
+      throw new BadRequestException('This class does not exist');
+    }
+
+    existedUser.classEnrollments.forEach((item) => {
+      if (item.classId === classId) {
+        item.enrollmentDate = data.enrollmentDate;
+      }
+    });
+    await this.repository.save(existedUser);
+
+    return `Update enrollment date with class: ${classExisted.name} successfully`;
+  }
   async findOneById(id: number): Promise<User> {
     const user = await this.repository
       .createQueryBuilder('users')
@@ -167,5 +222,32 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     return await this.repository.findOneBy({
       refreshToken,
     });
+  }
+  async getStudentsInClass(classId: number, query: StudentsQueryDto): Promise<PageDto<User>> {
+    const options = this.populateDefaultSearch(query);
+    const queryBuilder = this.repository
+      .createQueryBuilder('user')
+      .innerJoin('user.classEnrollments', 'classEnrollment')
+      .innerJoin('classEnrollment.class', 'class')
+      .where('class.id = :classId', { classId })
+      .select(['user.id', 'user.fullName', 'classEnrollment.enrollmentDate'])
+      .take(options.page_size)
+      .skip((options.page - 1) * options.page_size)
+      .orderBy('classEnrollment.enrollmentDate', options.order);
+
+    if (options.keyword) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('user.fullName ILIKE :keyword', { keyword: `%${options.keyword}%` });
+        }),
+      );
+    }
+
+    const [data, count] = await queryBuilder.getManyAndCount();
+    const pageMetaDto = new PageMetaDto({
+      itemCount: count,
+      pageOptionsDto: options,
+    });
+    return new PageDto(data, pageMetaDto);
   }
 }

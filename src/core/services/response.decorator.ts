@@ -39,7 +39,10 @@ export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(dataDto: D
       description: 'Successful',
     }),
   );
-export const ApiOkResponseDefault = <DataDto extends Type<unknown>>(dataDto: DataDto) => {
+export const ApiOkResponseDefault = <DataDto extends Type<unknown>>(
+  dataDto: DataDto,
+  statusCode: number = HttpStatus.OK,
+) => {
   return applyDecorators(
     ApiExtraModels(ResponseDto, dataDto),
     ApiOkResponse({
@@ -50,7 +53,7 @@ export const ApiOkResponseDefault = <DataDto extends Type<unknown>>(dataDto: Dat
             properties: {
               statusCode: {
                 type: 'number',
-                example: 200,
+                example: statusCode,
               },
               data:
                 dataDto.name === 'String'
@@ -65,7 +68,7 @@ export const ApiOkResponseDefault = <DataDto extends Type<unknown>>(dataDto: Dat
           },
         ],
       },
-      status: HttpStatus.OK,
+      status: statusCode,
       description: 'Successful',
     }),
   );

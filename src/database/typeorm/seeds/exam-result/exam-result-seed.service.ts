@@ -20,11 +20,8 @@ export class ExamResultSeedService {
             exam: {
               id: 1,
             },
-            class: {
+            classEnrollment: {
               id: 1,
-            },
-            user: {
-              id: 2,
             },
             result: 8.8,
           },
