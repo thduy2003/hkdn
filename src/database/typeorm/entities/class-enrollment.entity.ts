@@ -29,9 +29,6 @@ export class ClassEnrollment extends BaseEntity {
   @JoinColumn({ name: 'student_id' })
   student: User;
 
-  @OneToMany(() => ExamResult, (examResult) => examResult.classEnrollment, { cascade: true })
-  examResults: ExamResult[];
-
   @ApiPropertyOptional()
   @Column('timestamp with time zone', {
     name: 'enrollment_date',

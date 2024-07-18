@@ -114,9 +114,8 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     const classExisted = await this.repository.findOne({
       where: { id: classId },
       relations: {
-        classEnrollments: {
-          examResults: true,
-        },
+        classEnrollments: true,
+        examResults: true,
       },
     });
     if (!classExisted) {
@@ -133,10 +132,13 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
       exam: {
         id: data.examId,
       },
+      student: {
+        id: studentId,
+      },
       result: data.result,
       deadlineFeedback: data.deadlineFeedback,
     });
-    enrolledStudent.examResults.push(newResult);
+    classExisted.examResults.push(newResult);
 
     await this.repository.save(classExisted);
     return 'Entered result successfully';

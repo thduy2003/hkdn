@@ -26,8 +26,7 @@ import { FeedbackSeedModule } from './feedback/feedback-seed.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule, SharedModule],
-      useFactory: (configService: ApiConfigService) =>
-        configService.mysqlConfig,
+      useFactory: (configService: ApiConfigService) => configService.mysqlConfig,
       inject: [ApiConfigService, ConfigService],
     }),
   ],

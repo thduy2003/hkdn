@@ -24,7 +24,7 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
     super(classService);
   }
   @Get('/class/:id')
-  @Roles(USER_ROLE.EMPLOYEE)
+  @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER)
   @UseGuards(AuthGuard, RolesGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -45,7 +45,7 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
     return this.classService.getClassDetail(classId);
   }
   @Get('/class/:id/students')
-  @Roles(USER_ROLE.EMPLOYEE)
+  @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER)
   @UseGuards(AuthGuard, RolesGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

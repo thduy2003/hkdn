@@ -53,6 +53,6 @@ export class Class extends BaseEntity {
   @OneToMany(() => ClassEnrollment, (classEnrollment) => classEnrollment.class, { cascade: true })
   classEnrollments: ClassEnrollment[];
 
-  // @OneToMany(() => ExamResult, (examResult) => examResult.class)
-  // examResults: ExamResult[];
+  @OneToMany(() => ExamResult, (examResult) => examResult.class, { cascade: true })
+  examResults: ExamResult[];
 }
