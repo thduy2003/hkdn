@@ -227,11 +227,10 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     const options = this.populateDefaultSearch(query);
     const queryBuilder = this.repository
       .createQueryBuilder('user')
-      .innerJoin('user.classEnrollments', 'classEnrollment')
-      .innerJoin('user.examResults', 'examResult')
-      .innerJoin('examResult.exam', 'exam')
-      .innerJoin('classEnrollment.class', 'class')
-      .where('class.id = :classId', { classId })
+      .leftJoin('user.classEnrollments', 'classEnrollment')
+      .leftJoin('user.examResults', 'examResult', 'classEnrollment.class.id = examResult.class.id')
+      .leftJoin('examResult.exam', 'exam')
+      .where('classEnrollment.classId = :classId', { classId })
       .select([
         'user.id',
         'user.fullName',

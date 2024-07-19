@@ -1,25 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Exam } from '@database/typeorm/entities/exam.entity';
-import { EnterResultDto } from './dto/enter-result.dto';
-import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
-import { Class } from '@database/typeorm/entities/class.entity';
-import { User } from '@database/typeorm/entities';
-import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { AbstractBaseService } from '@core/services/base.service';
 
 @Injectable()
-export class ExamService {
+export class ExamService extends AbstractBaseService<Exam> {
   constructor(
     @InjectRepository(Exam)
     private examRepository: Repository<Exam>,
-    @InjectRepository(Class)
-    private classRepository: Repository<Class>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(ExamResult)
-    private examResultRepository: Repository<ExamResult>,
-  ) {}
+  ) {
+    super(examRepository);
+  }
+
   // async enterResult(data: EnterResultDto, user: JwtPayload): Promise<ExamResult> {
   //   const isExamExisted = await this.examRepository.findOneBy({
   //     id: data.examId,

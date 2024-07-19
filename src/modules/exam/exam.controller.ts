@@ -1,18 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { ExamService } from './exam.service';
-import { Roles } from '@modules/auth/guard/roles.decorator';
-import { USER_ROLE } from '@shared/enum/user.enum';
-import { RolesGuard } from '@modules/auth/guard/roles.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { EnterResultDto } from './dto/enter-result.dto';
-import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
-import { CurrentUser } from '@shared/decorator/user.decorator';
-import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
-import { AuthGuard } from '@modules/auth/guard/auth.guard';
+import { BaseController } from '@core/services/base.controller';
+import { Exam } from '@database/typeorm/entities/exam.entity';
 
-@Controller('exams')
-export class ExamController {
-  constructor(private readonly examService: ExamService) {}
+@Controller('')
+export class ExamController extends BaseController<Exam, ExamService>(Exam, ExamService) {
+  constructor(private readonly examService: ExamService) {
+    super(examService);
+  }
   // @Post('enter-result')
   // @Roles(USER_ROLE.TEACHER)
   // @UseGuards(AuthGuard, RolesGuard)

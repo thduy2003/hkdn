@@ -12,6 +12,8 @@ import { PageDto } from '@core/pagination/dto/page-dto';
 import { StudentsQueryDto } from './dto/students-query.dto';
 import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
 import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
+import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { Exam } from '@database/typeorm/entities/exam.entity';
 
 @Injectable()
 export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
@@ -110,16 +112,26 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     const students = await this.userService.getStudentsInClass(id, query);
     return students;
   }
-  async enterResult(data: EnterResultDto, classId: number, studentId: number): Promise<string> {
+  async enterResult(data: EnterResultDto, classId: number, studentId: number, user: JwtPayload): Promise<string> {
+    const examExisted = await this.repository.manager.getRepository(Exam).findOneBy({
+      id: data.examId,
+    });
+    if (!examExisted) {
+      throw new BadRequestException('This exam does not exist');
+    }
     const classExisted = await this.repository.findOne({
       where: { id: classId },
       relations: {
         classEnrollments: true,
         examResults: true,
+        teacher: true,
       },
     });
     if (!classExisted) {
       throw new BadRequestException('This class does not exist');
+    }
+    if (classExisted.teacher.id !== user.userId) {
+      throw new BadRequestException('Teacher does not teach this class');
     }
     const enrolledStudent = classExisted.classEnrollments.find((classEnrollment) => {
       return classEnrollment.studentId === studentId;

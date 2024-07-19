@@ -9,10 +9,11 @@ import { AuthGuard } from '@modules/auth/guard/auth.guard';
 import { ApiOkResponseDefault, ApiOkResponsePaginated } from './response.decorator';
 import pluralize from 'pluralize';
 import { ResponseDto } from '@core/query/dto/response-dto';
-export function BaseController<TEntity, TService extends IService<TEntity, QueryDto>, QueryDto>(
+import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
+export function BaseController<TEntity, TService extends IService<TEntity, QueryDto>, QueryDto = PageOptionsDto>(
   entityRef: any,
   serviceRef: any,
-  queryDto: any,
+  queryDto: any = PageOptionsDto,
   inputRef: any = undefined,
 ) {
   @Controller()
@@ -22,7 +23,7 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
       this.bizService = _bizService;
     }
     @Get(pluralize(entityRef.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()))
-    @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.STUDENT)
+    @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER)
     @UseGuards(AuthGuard, RolesGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({

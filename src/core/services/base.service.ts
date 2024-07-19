@@ -7,7 +7,7 @@ import { PageOptionsDto } from '@core/pagination/dto/page-option.dto';
 import { BadRequestException, Inject } from '@nestjs/common';
 import { BaseEntity } from '../../database/typeorm/entities/base.entity';
 
-export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto extends PageOptionsDto>
+export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto extends PageOptionsDto = PageOptionsDto>
   implements IService<TEntity, QueryDto>
 {
   repository: Repository<TEntity>;

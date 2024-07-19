@@ -13,6 +13,8 @@ import { PageDto } from '@core/pagination/dto/page-dto';
 import { User } from '@database/typeorm/entities';
 import { StudentsQueryDto } from './dto/students-query.dto';
 import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
+import { CurrentUser } from '@shared/decorator/user.decorator';
+import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 
 @Controller('')
 export class ClassController extends BaseController<Class, ClassService, ClassQueryDto>(
@@ -93,7 +95,8 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
     @Body() data: EnterResultDto,
     @Param('classId') classId: number,
     @Param('studentId') studentId: number,
+    @CurrentUser() user: JwtPayload,
   ): Promise<string> {
-    return this.classService.enterResult(data, classId, studentId);
+    return this.classService.enterResult(data, classId, studentId, user);
   }
 }
