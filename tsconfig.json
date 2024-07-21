@@ -18,8 +18,9 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
     "paths": {
-      "@config/*": ["src/config/*"],
+      "@config/*": ["src/configs/*"],
       "@core/*": ["src/core/*"],
       "@database/*": ["src/database/*"],
       "@modules/*": ["src/modules/*"],

@@ -1,18 +1,18 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
-import { Roles } from '@modules/auth/guard/roles.decorator';
-import { USER_ROLE } from '@shared/enum/user.enum';
-import { AuthGuard } from '@modules/auth/guard/auth.guard';
-import { RolesGuard } from '@modules/auth/guard/roles.guard';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import { CurrentUser } from '@shared/decorator/user.decorator';
-import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { BaseController } from '@core/services/base.controller';
 import { Feedback } from '@database/typeorm/entities/feedback.entity';
+import { FeedbackQueryDto } from './dto/feedback-query.dto';
 
-@Controller('feedback')
-export class FeedbackController {
-  constructor(private readonly feedbackService: FeedbackService) {}
+@Controller('')
+export class FeedbackController extends BaseController<Feedback, FeedbackService, FeedbackQueryDto>(
+  Feedback,
+  FeedbackService,
+  FeedbackQueryDto,
+) {
+  constructor(private readonly feedbackService: FeedbackService) {
+    super(feedbackService);
+  }
   // @Post(':examResultId')
   // @Roles(USER_ROLE.STUDENT)
   // @UseGuards(AuthGuard, RolesGuard)

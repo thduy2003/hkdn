@@ -1,20 +1,20 @@
+import { PageDto } from '@core/pagination/dto/page-dto';
+import { AbstractBaseService } from '@core/services/base.service';
 import { Feedback } from '@database/typeorm/entities/feedback.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
-import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
-import moment from 'moment';
+import { FeedbackQueryDto } from './dto/feedback-query.dto';
 
 @Injectable()
-export class FeedbackService {
+export class FeedbackService extends AbstractBaseService<Feedback, FeedbackQueryDto> {
   constructor(
     @InjectRepository(Feedback)
     private feedbackRepository: Repository<Feedback>,
-    @InjectRepository(ExamResult)
-    private examResultRepository: Repository<ExamResult>,
-  ) {}
+  ) {
+    super(feedbackRepository);
+  }
   // async createFeeback(data: CreateFeedbackDto, user: JwtPayload, examResultId: number): Promise<Feedback> {
   //   const isExamResultExisted = await this.examResultRepository.findOneBy({
   //     id: examResultId,

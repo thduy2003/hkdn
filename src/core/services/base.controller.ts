@@ -23,7 +23,7 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
       this.bizService = _bizService;
     }
     @Get(pluralize(entityRef.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()))
-    @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER)
+    @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER, USER_ROLE.STUDENT)
     @UseGuards(AuthGuard, RolesGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({

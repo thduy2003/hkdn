@@ -6,6 +6,7 @@ import { ExamResult } from './exam-result.entity';
 import { Feedback } from './feedback.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseEntity } from './base.entity';
+import { Notification } from './notification.entity';
 @Index('users_email_key', ['email'], { unique: true })
 @Index('users_pkey', ['id'], { unique: true })
 @Entity('users', { schema: 'public' })
@@ -60,6 +61,9 @@ export class User extends BaseEntity {
   @OneToMany(() => ExamResult, (examResult) => examResult.student, { cascade: true })
   examResults: ExamResult[];
 
-  @OneToMany(() => Feedback, (feedback) => feedback.user)
+  @OneToMany(() => Notification, (notification) => notification.user, { cascade: true })
+  notifications: Notification[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.user, { cascade: true })
   feedbacks: Feedback[];
 }

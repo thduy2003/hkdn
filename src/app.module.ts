@@ -23,6 +23,8 @@ import { ExamModule } from '@modules/exam/exam.module';
 import { FeedbackModule } from '@modules/feedback/feedback.module';
 import { ClassEnrollmentModule } from '@modules/class-enrollment/class-enrollment.module';
 import { ClassModule } from '@modules/class/class.module';
+import { NotificationModule } from '@modules/notification/notification.module';
+import { SocketModule } from '@shared/socket/socket.module';
 @Module({
   imports: [
     AuthModule,
@@ -32,6 +34,7 @@ import { ClassModule } from '@modules/class/class.module';
     ExamModule,
     FeedbackModule,
     ClassEnrollmentModule,
+    NotificationModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -55,6 +58,7 @@ import { ClassModule } from '@modules/class/class.module';
     }),
     AuthModule,
     UserModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [

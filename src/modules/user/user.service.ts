@@ -1,18 +1,9 @@
 import { User } from '@database/typeorm/entities';
 import { AuthCredentialDto } from '@modules/auth/dto/auth-credential.dto';
-import {
-  BadRequestException,
-  ConflictException,
-  forwardRef,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, FindManyOptions, ILike, Repository } from 'typeorm';
-import { CreateClassDto } from './dto/create-class.dto';
 import { Class } from '@database/typeorm/entities/class.entity';
-import { Course } from '@database/typeorm/entities/course.entity';
 import { UserQueryDto } from './dto/user-query.dto';
 import { AbstractBaseService } from '@core/services/base.service';
 import { EnrollClassDto } from './dto/enroll-class.dto';
@@ -22,6 +13,10 @@ import { PageDto } from '@core/pagination/dto/page-dto';
 import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
 import { StudentsQueryDto } from '@modules/class/dto/students-query.dto';
 import { UpdateEnrollmentDateDto } from './dto/update-enroll-date.dto';
+import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { CreateFeedbackDto } from '@modules/feedback/dto/create-feedback.dto';
+import moment from 'moment';
+import { Feedback } from '@database/typeorm/entities/feedback.entity';
 
 @Injectable()
 export class UserService extends AbstractBaseService<User, UserQueryDto> {
@@ -225,12 +220,28 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
   }
   async getStudentsInClass(classId: number, query: StudentsQueryDto): Promise<PageDto<User>> {
     const options = this.populateDefaultSearch(query);
+    /**
+     * Since I am displaying the list of students in a class, and each student may have multiple associated pieces of information, paginating based on this combined data will not produce the desired results. The solution is to first retrieve the list of students and paginate based on this list. Then, populate the additional combined information for each student before returning the result.
+     */
+    const baseQuery = this.repository
+      .createQueryBuilder('user')
+      .leftJoin('user.classEnrollments', 'classEnrollment')
+      .where('classEnrollment.classId = :classId', { classId });
+
+    const [studentData, count] = await baseQuery
+      .select(['user.id'])
+      .limit(options.page_size)
+      .offset((options.page - 1) * options.page_size)
+      .getManyAndCount();
+    const studentIds = studentData.map((c) => c.id);
     const queryBuilder = this.repository
       .createQueryBuilder('user')
       .leftJoin('user.classEnrollments', 'classEnrollment')
       .leftJoin('user.examResults', 'examResult', 'classEnrollment.class.id = examResult.class.id')
+      .leftJoin('examResult.feedbacks', 'feedback')
       .leftJoin('examResult.exam', 'exam')
-      .where('classEnrollment.classId = :classId', { classId })
+      .where('user.id IN (:...studentIds)', { studentIds })
+      .andWhere('classEnrollment.class.id = :classId', { classId })
       .select([
         'user.id',
         'user.fullName',
@@ -238,9 +249,9 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
         'examResult.id',
         'examResult.result',
         'exam.name',
+        'feedback.content',
+        'feedback.createdAt',
       ])
-      .take(options.page_size)
-      .skip((options.page - 1) * options.page_size)
       .orderBy('classEnrollment.enrollmentDate', options.order);
 
     if (options.keyword) {
@@ -251,11 +262,47 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
       );
     }
 
-    const [data, count] = await queryBuilder.getManyAndCount();
+    const data = await queryBuilder.getMany();
     const pageMetaDto = new PageMetaDto({
       itemCount: count,
       pageOptionsDto: options,
     });
     return new PageDto(data, pageMetaDto);
+  }
+  async getClassesExamResult(user: JwtPayload, query: StudentsQueryDto): Promise<PageDto<Class>> {
+    const classes = await this.classService.getClassesExamResult(user, query);
+    return classes;
+  }
+
+  async createFeedback(data: CreateFeedbackDto, user: JwtPayload, examResultId: number): Promise<string> {
+    const existedUser = await this.repository.findOne({
+      where: {
+        id: user.userId,
+      },
+      relations: {
+        feedbacks: true,
+        examResults: true,
+      },
+    });
+    if (!existedUser) {
+      throw new BadRequestException('This student does not exist');
+    }
+    const examResult = existedUser.examResults.find((item) => item.id === examResultId);
+    if (!examResult) {
+      throw new BadRequestException('This exam result does not belong to this user');
+    }
+    const checkValidDate = moment(examResult.deadlineFeedback).isBefore(new Date());
+    if (checkValidDate) {
+      throw new BadRequestException('The deadline to submit feedback for this exam result has passed.');
+    }
+    const newFeedback = this.repository.manager.getRepository(Feedback).create({
+      content: data.content,
+      examResult: {
+        id: examResultId,
+      },
+    });
+    existedUser.feedbacks.push(newFeedback);
+    await this.repository.save(existedUser);
+    return 'Created feedback for this exam successfully';
   }
 }

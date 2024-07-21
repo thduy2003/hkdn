@@ -32,7 +32,6 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     if (searchParams && Object.keys(searchParams).length > 0) {
       for (const key in searchParams) {
         const modelProp = dashToCamelCase(key);
-
         // Only add where field if the field name is value
         if (this.isFieldNameValid(modelProp)) {
           if (searchParams[key]) {
@@ -61,7 +60,6 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
         isValid = false;
       }
     });
-
     return isValid;
   }
   populateDefaultSearch(query: QueryDto): PageOptionsDto {
@@ -90,6 +88,7 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     const managerOptions: FindManyOptions = await this.populateSearchOptions(query);
     managerOptions.skip = (searchOptions.page - 1) * searchOptions.page_size;
     managerOptions.take = searchOptions.page_size;
+    console.log(managerOptions);
     const [data, count] = await this.repository.findAndCount(managerOptions);
     const returnedData = await this.populateReturnedData(data);
     const pageMetaDto = new PageMetaDto({

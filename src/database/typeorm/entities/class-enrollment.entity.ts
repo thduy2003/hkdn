@@ -48,4 +48,7 @@ export class ClassEnrollment extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date | null;
+
+  @OneToMany(() => ExamResult, (examResult) => examResult.student, { cascade: true })
+  examResults: ExamResult[];
 }

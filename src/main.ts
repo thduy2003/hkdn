@@ -9,8 +9,10 @@ import { setupSwagger } from './setup-swagger';
 import cookieParser from 'cookie-parser';
 import { TransformInterceptor } from '@shared/interceptors/transform.interceptor';
 import { GlobalExceptionsFilter } from '@core/filters/global-exception-filter';
-import { UnauthorizedExceptionFilter } from '@core/filters/unauthorized.filter';
 import { ErrorService } from '@shared/services/error.service';
+import * as admin from 'firebase-admin';
+import { ServiceAccount } from 'firebase-admin';
+import serviceAccount from '@config/firebase/serviceAccountKey.json';
 
 const logger = new ProjectLogger('bootstrap');
 
@@ -20,6 +22,10 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.use(requestLoggerMiddleware);
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as ServiceAccount),
+    databaseURL: 'https://fcm-notifications-system.firebaseio.com',
+  });
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,
@@ -38,6 +44,16 @@ async function bootstrap(): Promise<NestExpressApplication> {
 
   const config = app.get<ConfigService>(ConfigService);
   const error = app.get<ErrorService>(ErrorService);
+
+  //config firebase
+  // const params = {
+  //   projectId: config.getOrThrow('FIREBASE_PROJECT_ID'),
+  //   clientEmail: config.getOrThrow('FIREBASE_CLIENT_EMAIL').firebaseClientEmail,
+  //   credential: admin.credential.cert({
+  //     privateKey: config.getOrThrow('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+  //   }),
+  // };
+  // admin.initializeApp({ ...params });
 
   app.useGlobalFilters(new GlobalExceptionsFilter(config, error));
 

@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { Brackets, FindManyOptions, Repository } from 'typeorm';
 import moment from 'moment';
 import { Class } from '@database/typeorm/entities/class.entity';
 import { AbstractBaseService } from '@core/services/base.service';
@@ -14,6 +14,7 @@ import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
 import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
 import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { Exam } from '@database/typeorm/entities/exam.entity';
+import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
 
 @Injectable()
 export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
@@ -154,5 +155,62 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
 
     await this.repository.save(classExisted);
     return 'Entered result successfully';
+  }
+  async getClassesExamResult(user: JwtPayload, query: StudentsQueryDto): Promise<PageDto<Class>> {
+    const options = this.populateDefaultSearch(query);
+    /**
+     * Since I am displaying the list of class of a student, and each class may have multiple associated pieces of information, paginating based on this combined data will not produce the desired results. The solution is to first retrieve the list of classes and paginate based on this list. Then, populate the additional combined information for each class before returning the result.
+     */
+    const baseQuery = this.repository
+      .createQueryBuilder('class')
+      .leftJoin('class.classEnrollments', 'classEnrollment')
+      .where('classEnrollment.student.id = :userId', { userId: user.userId });
+
+    const [classData, count] = await baseQuery
+      .select(['class.id'])
+      .limit(options.page_size)
+      .offset((options.page - 1) * options.page_size)
+      .getManyAndCount();
+
+    const classIds = classData.map((c) => c.id);
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('class')
+      .leftJoin('class.classEnrollments', 'classEnrollment')
+      .leftJoin('class.teacher', 'teacher')
+      .leftJoin('class.examResults', 'examResult', 'classEnrollment.student.id = examResult.student.id')
+      .leftJoin('examResult.feedbacks', 'feedback')
+      .leftJoin('examResult.exam', 'exam')
+      .where('class.id IN (:...classIds)', { classIds })
+      .select([
+        'class.id',
+        'class.name',
+        'classEnrollment.enrollmentDate',
+        'examResult.result',
+        'examResult.id',
+        'examResult.deadlineFeedback',
+        'exam.name',
+        'feedback.createdAt',
+        'feedback.content',
+        'teacher.id',
+      ])
+      .orderBy('classEnrollment.enrollmentDate', options.order);
+
+    if (options.keyword) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('class.name ILIKE :keyword', { keyword: `%${options.keyword}%` });
+        }),
+      );
+    }
+
+    const data = await queryBuilder.getMany();
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: count,
+      pageOptionsDto: options,
+    });
+
+    return new PageDto(data, pageMetaDto);
   }
 }
