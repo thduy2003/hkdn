@@ -11,6 +11,8 @@ import { TransformInterceptor } from '@shared/interceptors/transform.interceptor
 import { GlobalExceptionsFilter } from '@core/filters/global-exception-filter';
 import { ErrorService } from '@shared/services/error.service';
 import * as admin from 'firebase-admin';
+import * as bodyParser from 'body-parser';
+
 import { ServiceAccount } from 'firebase-admin';
 import serviceAccount from '@config/firebase/serviceAccountKey.json';
 
@@ -19,6 +21,8 @@ const logger = new ProjectLogger('bootstrap');
 async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
   app.setGlobalPrefix('/api');
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
   app.use(requestLoggerMiddleware);
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
