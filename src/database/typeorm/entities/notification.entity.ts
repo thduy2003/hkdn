@@ -16,6 +16,11 @@ export class Notification extends BaseEntity {
   @Column({ default: false })
   read: boolean;
 
+  @Column('json', {
+    nullable: true,
+  })
+  metadata: string;
+
   @Column('timestamp with time zone', {
     name: 'created_at',
     nullable: true,

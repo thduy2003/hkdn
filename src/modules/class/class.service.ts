@@ -69,6 +69,21 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
 
   //   return filteredClasses;
   // }
+  protected async populateSearchOptions(searchParams: ClassQueryDto): Promise<FindManyOptions> {
+    const options = await super.populateSearchOptions(searchParams);
+
+    const criteriaOptions: any = {
+      where: {
+        teacher: {
+          id: searchParams.teacherId,
+        },
+      },
+      order: {
+        createdAt: searchParams.order || 'DESC',
+      },
+    };
+    return Promise.resolve(criteriaOptions);
+  }
   async findOne(id: number): Promise<Class> {
     return this.repository.findOneBy({
       id,
@@ -238,7 +253,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
       );
     }
 
-    const data = await queryBuilder.getMany();
+    const data = classIds.length > 0 ? await queryBuilder.getMany() : [];
 
     const pageMetaDto = new PageMetaDto({
       itemCount: count,

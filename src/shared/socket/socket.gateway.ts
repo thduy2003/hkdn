@@ -26,13 +26,22 @@ export class SocketGateway {
   @SubscribeMessage('send_notification')
   async handleSendMessage(client: Socket, payload: any): Promise<void> {
     console.log('payload', payload);
-    const { receiver_id, content } = payload;
+    const { receiver_id, content, classId, studentId, examResultId } = payload;
+    let data: any = {};
+    if (classId && studentId && examResultId) {
+      data = {
+        classId,
+        studentId,
+        examResultId,
+      };
+    }
     const receiver_socket_id = this.users[receiver_id]?.socket_id;
     const notification = this.notificationRepository.create({
       content,
       user: {
         id: receiver_id,
       },
+      metadata: data,
     });
     const result = await this.notificationRepository.save(notification);
     notification.id = result.id;

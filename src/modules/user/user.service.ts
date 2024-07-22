@@ -219,6 +219,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     });
   }
   async getStudentsInClass(classId: number, query: StudentsQueryDto): Promise<PageDto<User>> {
+    console.log('class', classId);
     const options = this.populateDefaultSearch(query);
     /**
      * Since I am displaying the list of students in a class, and each student may have multiple associated pieces of information, paginating based on this combined data will not produce the desired results. The solution is to first retrieve the list of students and paginate based on this list. Then, populate the additional combined information for each student before returning the result.
@@ -227,7 +228,6 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
       .createQueryBuilder('user')
       .leftJoin('user.classEnrollments', 'classEnrollment')
       .where('classEnrollment.classId = :classId', { classId });
-
     const [studentData, count] = await baseQuery
       .select(['user.id'])
       .limit(options.page_size)
@@ -262,7 +262,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
       );
     }
 
-    const data = await queryBuilder.getMany();
+    const data = studentIds.length > 0 ? await queryBuilder.getMany() : [];
     const pageMetaDto = new PageMetaDto({
       itemCount: count,
       pageOptionsDto: options,
