@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
 
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException('PROF-104');
+      throw new UnauthorizedException('USER_MUST_LOGGED_IN');
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
@@ -38,7 +38,7 @@ export class AuthGuard implements CanActivate {
       if (error instanceof TokenExpiredError) {
         throw new UnauthorizedException('EXPIRED_TOKEN');
       }
-      throw new UnauthorizedException('PROF-104');
+      throw new UnauthorizedException('USER_MUST_LOGGED_IN');
     }
     return true;
   }

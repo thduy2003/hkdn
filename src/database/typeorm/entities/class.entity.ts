@@ -1,10 +1,20 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Course } from './course.entity';
 import { ClassEnrollment } from './class-enrollment.entity';
 import { ExamResult } from './exam-result.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseEntity } from './base.entity';
+import { Exam } from './exam.entity';
 
 @Entity('classes', { schema: 'public' })
 export class Class extends BaseEntity {
@@ -55,4 +65,12 @@ export class Class extends BaseEntity {
 
   @OneToMany(() => ExamResult, (examResult) => examResult.class, { cascade: true })
   examResults: ExamResult[];
+  //change first column in the join table use join column, and change second column use inverseJoinColumn
+  @ManyToMany(() => Exam)
+  @JoinTable({
+    name: 'class_exam',
+    joinColumn: { name: 'class_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'exam_id', referencedColumnName: 'id' },
+  })
+  exams: Exam[];
 }

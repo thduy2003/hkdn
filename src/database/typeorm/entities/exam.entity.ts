@@ -31,6 +31,6 @@ export class Exam extends BaseEntity {
   })
   updatedAt: Date | null;
 
-  @OneToMany(() => ExamResult, (examResult) => examResult.exam)
+  @OneToMany(() => ExamResult, (examResult) => examResult.exam, { cascade: true })
   examResults: ExamResult[];
 }

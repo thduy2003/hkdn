@@ -15,6 +15,7 @@ import { StudentsQueryDto } from './dto/students-query.dto';
 import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
 import { CurrentUser } from '@shared/decorator/user.decorator';
 import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
+import { AddExamDto } from './dto/add-exam.dto';
 
 @Controller('')
 export class ClassController extends BaseController<Class, ClassService, ClassQueryDto>(
@@ -98,5 +99,31 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
     @CurrentUser() user: JwtPayload,
   ): Promise<string> {
     return this.classService.enterResult(data, classId, studentId, user);
+  }
+
+  @Post('/class/:classId/exam')
+  @Roles(USER_ROLE.TEACHER)
+  @UseGuards(AuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    tags: ['class'],
+    operationId: 'addExams',
+    summary: 'Add exams for the class',
+    description: 'Add exams for the class',
+  })
+  @ApiParam({
+    name: 'classId',
+    required: true,
+    description: 'ID of the class ',
+    type: 'integer',
+  })
+  @ApiOkResponseDefault(String)
+  @ApiBearerAuth('token')
+  async addExams(
+    @Body() data: AddExamDto,
+    @Param('classId') classId: number,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<string> {
+    return this.classService.addExams(data, classId, user);
   }
 }

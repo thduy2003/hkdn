@@ -8,10 +8,7 @@ import { JwtPayload } from '../interface/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly userService: UserService,
-  ) {
+  constructor(private readonly configService: ConfigService, private readonly userService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get('JWT_ACCESS_SECRET'),
@@ -23,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const { userId } = payload;
     const user = await this.userService.findOneById(userId);
     if (!user) {
-      throw new UnauthorizedException('PROF-104');
+      throw new UnauthorizedException('USER_MUST_LOGGED_IN');
     }
 
     return user;

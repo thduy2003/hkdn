@@ -198,7 +198,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
       .select(['users.id as id', 'users.name as name', 'users.email as email', 'users.role as role'])
       .getRawOne();
 
-    if (!user) throw new UnauthorizedException('PROF-104');
+    if (!user) throw new UnauthorizedException('USER_MUST_LOGGED_IN');
 
     return user;
   }
@@ -293,7 +293,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     }
     const checkValidDate = moment(examResult.deadlineFeedback).isBefore(new Date());
     if (checkValidDate) {
-      throw new BadRequestException('The deadline to submit feedback for this exam result has passed.');
+      throw new BadRequestException('DEADLINE_FEEDBACK_PASSED');
     }
     const newFeedback = this.repository.manager.getRepository(Feedback).create({
       content: data.content,

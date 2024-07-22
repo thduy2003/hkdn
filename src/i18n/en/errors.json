@@ -1,4 +1,7 @@
 {
     "EMAIL_OR_PASSWORD_IS_INCORRECT": "Email or password is incorrect",
-    "EXPIRED_TOKEN": "Expired token"
+    "EXPIRED_TOKEN": "Expired token",
+    "DEADLINE_FEEDBACK_PASSED": "The deadline to submit feedback for this exam result has passed.",
+    "USER_MUST_LOGGED_IN": "User must be logged in to access this resource",
+    "EXAM_RESULT_EXISTED": "Student {studentName} already has a result for the exam: {examName}. Please update the result."
 }

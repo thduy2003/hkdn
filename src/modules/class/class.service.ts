@@ -15,6 +15,7 @@ import { ExamResult } from '@database/typeorm/entities/exam-result.entity';
 import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { Exam } from '@database/typeorm/entities/exam.entity';
 import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
+import { AddExamDto } from './dto/add-exam.dto';
 
 @Injectable()
 export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
@@ -94,6 +95,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
       },
       relations: {
         teacher: true,
+        exams: true,
       },
       select: {
         id: true,
@@ -103,6 +105,11 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
         endDate: true,
         teacher: {
           fullName: true,
+        },
+        exams: {
+          id: true,
+          name: true,
+          type: true,
         },
       },
     });
@@ -114,34 +121,61 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     return students;
   }
   async enterResult(data: EnterResultDto, classId: number, studentId: number, user: JwtPayload): Promise<string> {
-    const examExisted = await this.repository.manager.getRepository(Exam).findOneBy({
-      id: data.examId,
-    });
-    if (!examExisted) {
-      throw new BadRequestException('This exam does not exist');
-    }
     const classExisted = await this.repository.findOne({
       where: { id: classId },
       relations: {
         classEnrollments: true,
-        examResults: true,
+        examResults: {
+          exam: true,
+          student: true,
+        },
         teacher: true,
+        exams: true,
       },
     });
     if (!classExisted) {
       throw new BadRequestException('This class does not exist');
     }
+
     if (classExisted.teacher.id !== user.userId) {
       throw new BadRequestException('Teacher does not teach this class');
     }
+
     const enrolledStudent = classExisted.classEnrollments.find((classEnrollment) => {
       return classEnrollment.studentId === studentId;
     });
-
     if (!enrolledStudent) {
       throw new BadRequestException(`This student has not enrolled in the class: ${classExisted.name}`);
     }
-    const newResult = await this.repository.manager.getRepository(ExamResult).create({
+    const existedExam = classExisted.exams.find((exam) => exam.id !== data.examId);
+    if (!existedExam) {
+      throw new BadRequestException(`This class does not have this exam`);
+    }
+    const validExam = await this.repository.manager.getRepository(Exam).findOneBy({
+      id: data.examId,
+    });
+
+    if (!validExam) {
+      throw new BadRequestException('This exam does not exist');
+    }
+
+    const existedExamResult = classExisted.examResults.find((examResult) => {
+      return examResult.exam.id === data.examId && examResult.student.id === studentId;
+    });
+    if (existedExamResult) {
+      // throw new BadRequestException(
+      //   `Student ${existedExamResult.student.fullName} already has a result for the exam: ${existedExam.name}. Please update the result.`,
+      // );
+      throw new BadRequestException({
+        message: 'EXAM_RESULT_EXISTED',
+        args: {
+          studentName: existedExamResult.student.fullName,
+          examName: existedExam.name,
+        },
+      });
+    }
+
+    const newResult = this.repository.manager.getRepository(ExamResult).create({
       exam: {
         id: data.examId,
       },
@@ -173,7 +207,6 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
       .getManyAndCount();
 
     const classIds = classData.map((c) => c.id);
-
     const queryBuilder = this.repository
       .createQueryBuilder('class')
       .leftJoin('class.classEnrollments', 'classEnrollment')
@@ -182,6 +215,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
       .leftJoin('examResult.feedbacks', 'feedback')
       .leftJoin('examResult.exam', 'exam')
       .where('class.id IN (:...classIds)', { classIds })
+      .andWhere('classEnrollment.student.id = :userId', { userId: user.userId })
       .select([
         'class.id',
         'class.name',
@@ -212,5 +246,37 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     });
 
     return new PageDto(data, pageMetaDto);
+  }
+  async addExams(data: AddExamDto, classId: number, user: JwtPayload): Promise<string> {
+    const existedClass = await this.repository.findOne({
+      where: { id: classId },
+      relations: {
+        teacher: true,
+        exams: true,
+      },
+    });
+    if (!existedClass) {
+      throw new BadRequestException('This class does not exist');
+    }
+    if (existedClass.teacher.id !== user.userId) {
+      throw new BadRequestException('Teacher does not teach this class');
+    }
+    for (const examId of data.examIds) {
+      const existedExam = existedClass.exams.find((exam) => {
+        return exam.id === examId;
+      });
+      if (existedExam) {
+        throw new BadRequestException(`Exam: ${existedExam.name} has already existed in the class`);
+      }
+      const validExam = await this.repository.manager.getRepository(Exam).findOneBy({
+        id: examId,
+      });
+      if (!validExam) {
+        throw new BadRequestException('This exam does not exist');
+      }
+      existedClass.exams.push(validExam);
+    }
+    await this.repository.save(existedClass);
+    return 'Exams have been successfully added for the class.';
   }
 }

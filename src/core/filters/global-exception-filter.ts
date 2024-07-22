@@ -1,11 +1,5 @@
 import { NodeEnv } from '@core/enum';
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MulterError } from 'multer';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
@@ -17,10 +11,7 @@ import { ErrorService } from '@shared/services/error.service';
 export class GlobalExceptionsFilter implements ExceptionFilter {
   logger = new ProjectLogger('GlobalExceptionsFilter');
 
-  constructor(
-    private configService: ConfigService,
-    private errorService: ErrorService,
-  ) {}
+  constructor(private configService: ConfigService, private errorService: ErrorService) {}
   catch(exception: any, host: ArgumentsHost): any {
     if (exception instanceof HttpException) {
       return this.handleHttpException(exception, host);
@@ -37,10 +28,9 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
     const customResponse: any = exception.getResponse();
     const i18n = I18nContext.current(host);
     const stackTrace = exception.stack;
-
-    const message =
-      customResponse || response.message || 'Unknown server errors';
-
+    console.log('customResponse', customResponse);
+    const message = customResponse || response.message || 'Unknown server errors';
+    console.log('message handleHttpException: ' + message);
     if (this.configService.get('NODE_ENV') == NodeEnv.DEVELOPMENT) {
       this.logger.info(exception.message);
     } else {

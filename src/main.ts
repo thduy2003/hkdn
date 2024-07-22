@@ -24,7 +24,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as ServiceAccount),
-    databaseURL: 'https://fcm-notifications-system.firebaseio.com',
+    databaseURL: 'https://push-notifications-50e8d-default-rtdb.asia-southeast1.firebasedatabase.app',
   });
   app.enableCors({
     origin: 'http://localhost:3000',

@@ -119,7 +119,7 @@ export class AuthService {
       .select(['users.id as id', 'users.name as name', 'users.email as email', 'users.role as role'])
       .getRawOne();
 
-    if (!user) throw new UnauthorizedException('PROF-104');
+    if (!user) throw new UnauthorizedException('USER_MUST_LOGGED_IN');
 
     return user;
   }
