@@ -2,9 +2,12 @@ import { Controller } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { BaseController } from '@core/services/base.controller';
 import { Exam } from '@database/typeorm/entities/exam.entity';
+import { USER_ROLE } from '@shared/enum/user.enum';
 
 @Controller('')
-export class ExamController extends BaseController<Exam, ExamService>(Exam, ExamService) {
+export class ExamController extends BaseController<Exam, ExamService>(Exam, ExamService, [], [], {
+  findList: [USER_ROLE.TEACHER, USER_ROLE.EMPLOYEE, USER_ROLE.STUDENT],
+}) {
   constructor(private readonly examService: ExamService) {
     super(examService);
   }

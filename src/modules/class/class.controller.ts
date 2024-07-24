@@ -23,6 +23,10 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
   Class,
   ClassService,
   ClassQueryDto,
+  [],
+  {
+    findList: [USER_ROLE.TEACHER, USER_ROLE.EMPLOYEE],
+  },
 ) {
   constructor(private readonly classService: ClassService) {
     super(classService);

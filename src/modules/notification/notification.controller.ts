@@ -6,12 +6,17 @@ import { PushNotificationDto } from './dto/push-notification.dto';
 import { BaseController } from '@core/services/base.controller';
 import { Notification } from '@database/typeorm/entities/notification.entity';
 import { NotificationQueryDto } from './dto/notification.query';
+import { USER_ROLE } from '@shared/enum/user.enum';
 
 @Controller('')
 export class NotificationController extends BaseController<Notification, NotificationService, NotificationQueryDto>(
   Notification,
   NotificationService,
   NotificationQueryDto,
+  [],
+  {
+    findList: [USER_ROLE.EMPLOYEE, USER_ROLE.STUDENT, USER_ROLE.TEACHER],
+  },
 ) {
   constructor(private readonly notificationService: NotificationService) {
     super(notificationService);

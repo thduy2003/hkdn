@@ -15,6 +15,12 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
   serviceRef: any,
   queryDto: any = PageOptionsDto,
   inputRef: any = undefined,
+  roles: {
+    findOne?: USER_ROLE[];
+    findList?: USER_ROLE[];
+    upsert?: USER_ROLE[];
+    delete?: USER_ROLE[];
+  } = {},
 ) {
   @Controller()
   class BaseController {
@@ -23,7 +29,8 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
       this.bizService = _bizService;
     }
     @Get(pluralize(entityRef.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()))
-    @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER, USER_ROLE.STUDENT)
+    // @Roles(USER_ROLE.EMPLOYEE, USER_ROLE.TEACHER, USER_ROLE.STUDENT)
+    @Roles(...(roles.findList || []))
     @UseGuards(AuthGuard, RolesGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
@@ -40,7 +47,8 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
     }
 
     @Post(entityRef.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase())
-    @Roles(USER_ROLE.EMPLOYEE)
+    // @Roles(USER_ROLE.EMPLOYEE)
+    @Roles(...(roles.upsert || []))
     @UseGuards(AuthGuard, RolesGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({

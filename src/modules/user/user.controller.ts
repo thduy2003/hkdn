@@ -37,6 +37,10 @@ export class UserController extends BaseController<User, UserService, UserQueryD
   UserService,
   UserQueryDto,
   CreateUserDto,
+  {
+    findList: [USER_ROLE.EMPLOYEE],
+    upsert: [USER_ROLE.EMPLOYEE],
+  },
 ) {
   constructor(private readonly userService: UserService) {
     super(userService);
