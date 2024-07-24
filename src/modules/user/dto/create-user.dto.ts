@@ -11,8 +11,4 @@ export class CreateUserDto {
   @IsOptional()
   @Type(() => String)
   readonly email?: string;
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => String)
-  readonly role?: string;
 }

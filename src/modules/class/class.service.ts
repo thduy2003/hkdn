@@ -16,6 +16,7 @@ import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { Exam } from '@database/typeorm/entities/exam.entity';
 import { PageMetaDto } from '@core/pagination/dto/page-meta.dto';
 import { AddExamDto } from './dto/add-exam.dto';
+import { UpdateResultDto } from './dto/update-result.dto';
 
 @Injectable()
 export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
@@ -135,7 +136,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     const students = await this.userService.getStudentsInClass(id, query);
     return students;
   }
-  async enterResult(data: EnterResultDto, classId: number, studentId: number, user: JwtPayload): Promise<string> {
+  private async validateUserAndExamInClass(classId: number, studentId: number, examId: number, user: JwtPayload) {
     const classExisted = await this.repository.findOne({
       where: { id: classId },
       relations: {
@@ -148,6 +149,7 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
         exams: true,
       },
     });
+
     if (!classExisted) {
       throw new BadRequestException('This class does not exist');
     }
@@ -159,44 +161,42 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
     const enrolledStudent = classExisted.classEnrollments.find((classEnrollment) => {
       return classEnrollment.studentId === studentId;
     });
+
     if (!enrolledStudent) {
       throw new BadRequestException(`This student has not enrolled in the class: ${classExisted.name}`);
     }
-    const existedExam = classExisted.exams.find((exam) => exam.id !== data.examId);
+    const existedExam = classExisted.exams.find((exam) => exam.id !== examId);
+
     if (!existedExam) {
       throw new BadRequestException(`This class does not have this exam`);
     }
-    const validExam = await this.repository.manager.getRepository(Exam).findOneBy({
-      id: data.examId,
-    });
+    return classExisted;
+  }
 
-    if (!validExam) {
-      throw new BadRequestException('This exam does not exist');
-    }
-
+  private findExamResultInClass(classExisted: Class, examId: number, studentId: number) {
     const existedExamResult = classExisted.examResults.find((examResult) => {
-      return examResult.exam.id === data.examId && examResult.student.id === studentId;
+      return examResult.exam.id === examId && examResult.student.id === studentId;
     });
+    return existedExamResult;
+  }
+
+  async enterResult(data: EnterResultDto, classId: number, studentId: number, user: JwtPayload): Promise<string> {
+    const classExisted = await this.validateUserAndExamInClass(classId, studentId, data.examId, user);
+
+    const existedExamResult = this.findExamResultInClass(classExisted, data.examId, studentId);
     if (existedExamResult) {
-      // throw new BadRequestException(
-      //   `Student ${existedExamResult.student.fullName} already has a result for the exam: ${existedExam.name}. Please update the result.`,
-      // );
       throw new BadRequestException({
         message: 'EXAM_RESULT_EXISTED',
         args: {
           studentName: existedExamResult.student.fullName,
-          examName: existedExam.name,
+          examName: existedExamResult.exam.name,
         },
       });
     }
 
     const newResult = this.repository.manager.getRepository(ExamResult).create({
-      exam: {
-        id: data.examId,
-      },
-      student: {
-        id: studentId,
-      },
+      exam: { id: data.examId },
+      student: { id: studentId },
       result: data.result,
       deadlineFeedback: data.deadlineFeedback,
     });
@@ -204,6 +204,22 @@ export class ClassService extends AbstractBaseService<Class, ClassQueryDto> {
 
     await this.repository.save(classExisted);
     return 'Entered result successfully';
+  }
+
+  async updateResult(data: UpdateResultDto, classId: number, studentId: number, user: JwtPayload): Promise<string> {
+    const classExisted = await this.validateUserAndExamInClass(classId, studentId, data.examId, user);
+
+    const existedExamResult = this.findExamResultInClass(classExisted, data.examId, studentId);
+    if (!existedExamResult) {
+      throw new BadRequestException(`This student does not have a result for the exam yet. Please enter a result`);
+    }
+
+    await this.repository.manager.getRepository(ExamResult).save({
+      ...existedExamResult,
+      result: data.result,
+    });
+
+    return 'Updated result successfully';
   }
   async getClassesExamResult(user: JwtPayload, query: StudentsQueryDto): Promise<PageDto<Class>> {
     const options = this.populateDefaultSearch(query);

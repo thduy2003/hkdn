@@ -3,5 +3,5 @@ import { FindManyOptions } from 'typeorm';
 
 export interface IService<IEntity, QueryDto> {
   findAll(query: QueryDto): Promise<PageDto<IEntity>>;
-  save(entity: IEntity): Promise<IEntity>;
+  save(entity: IEntity): Promise<Partial<IEntity>>;
 }

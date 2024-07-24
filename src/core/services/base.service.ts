@@ -112,6 +112,12 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
   protected afterCompleted(originalEntity: TEntity, savedEntity: TEntity, action: string): Promise<TEntity> {
     return Promise.resolve(savedEntity);
   }
+  protected populateSavedEntity(savedEntity: TEntity): Promise<Partial<TEntity>> {
+    return Promise.resolve(savedEntity);
+  }
+  protected async checkDuplicateRecord(entity: TEntity, action: string): Promise<boolean> {
+    return true;
+  }
 
   getPrimaryKey(): string {
     return this.repository.metadata.primaryColumns[0].propertyName;
@@ -133,7 +139,7 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     return this.getById(entity[this.getPrimaryKey()]);
   }
 
-  private async executeSaveEntity(originalEntity: TEntity, entity: TEntity, action: string): Promise<TEntity> {
+  private async executeSaveEntity(originalEntity: TEntity, entity: TEntity, action: string): Promise<Partial<TEntity>> {
     return this.repository.manager
       .transaction(async (transactionalEntityManager) => {
         entity = await this.beforeSave(originalEntity, entity, action);
@@ -145,14 +151,14 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
         // Get latest entity to execute update association
         const currentEntityInstance = action === 'create' ? savedResult : entity;
         await this.afterSaved(currentEntityInstance, action);
-        return this.getEntity(currentEntityInstance);
+        return currentEntityInstance;
       })
       .then(async (savedEntity) => {
         await this.afterCompleted(originalEntity, savedEntity, action);
-        return Promise.resolve(savedEntity);
+        return Promise.resolve(await this.populateSavedEntity(savedEntity));
       });
   }
-  async save(entity: TEntity): Promise<TEntity> {
+  async save(entity: TEntity): Promise<Partial<TEntity>> {
     // We support update by either using id or primary key
     // but before saving we need to set the id to primary key
     if (!entity[this.getPrimaryKey()]) {
@@ -187,7 +193,7 @@ export abstract class AbstractBaseService<TEntity extends BaseEntity, QueryDto e
     // Each service should able to implement that function to validate duplication
     // error before executing insert object to database
     // await this.checkDuplicateRecord(entity, action);
-
+    await this.checkDuplicateRecord(entity, action);
     return this.executeSaveEntity(existingEntity, entity, action);
   }
 }

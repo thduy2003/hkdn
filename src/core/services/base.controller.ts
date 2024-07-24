@@ -52,7 +52,7 @@ export function BaseController<TEntity, TService extends IService<TEntity, Query
     @ApiOkResponseDefault(entityRef)
     @ApiBody({ type: inputRef })
     @ApiBearerAuth('token')
-    async createClass(@Body() data: typeof inputRef): Promise<TEntity> {
+    async createClass(@Body() data: typeof inputRef): Promise<Partial<TEntity>> {
       return this.bizService.save(data);
     }
   }

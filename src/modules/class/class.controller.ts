@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { BaseController } from '@core/services/base.controller';
 import { Class } from '@database/typeorm/entities/class.entity';
@@ -16,6 +16,7 @@ import { EnterResultDto } from '@modules/exam/dto/enter-result.dto';
 import { CurrentUser } from '@shared/decorator/user.decorator';
 import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { AddExamDto } from './dto/add-exam.dto';
+import { UpdateResultDto } from './dto/update-result.dto';
 
 @Controller('')
 export class ClassController extends BaseController<Class, ClassService, ClassQueryDto>(
@@ -99,6 +100,39 @@ export class ClassController extends BaseController<Class, ClassService, ClassQu
     @CurrentUser() user: JwtPayload,
   ): Promise<string> {
     return this.classService.enterResult(data, classId, studentId, user);
+  }
+
+  @Put('/class/:classId/:studentId/result')
+  @Roles(USER_ROLE.TEACHER)
+  @UseGuards(AuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    tags: ['class'],
+    operationId: 'updateResult',
+    summary: 'Update the result for a student in the class',
+    description: 'Update the result for a student in the class',
+  })
+  @ApiParam({
+    name: 'classId',
+    required: true,
+    description: 'ID of the class ',
+    type: 'integer',
+  })
+  @ApiParam({
+    name: 'studentId',
+    required: true,
+    description: 'ID of the student ',
+    type: 'integer',
+  })
+  @ApiOkResponseDefault(String)
+  @ApiBearerAuth('token')
+  async updateResult(
+    @Body() data: UpdateResultDto,
+    @Param('classId') classId: number,
+    @Param('studentId') studentId: number,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<string> {
+    return this.classService.updateResult(data, classId, studentId, user);
   }
 
   @Post('/class/:classId/exam')

@@ -17,6 +17,9 @@ import { JwtPayload } from '@modules/auth/interface/jwt-payload.interface';
 import { CreateFeedbackDto } from '@modules/feedback/dto/create-feedback.dto';
 import moment from 'moment';
 import { Feedback } from '@database/typeorm/entities/feedback.entity';
+import { plainToInstance } from 'class-transformer';
+import { UserResponeDto } from './dto/user-response.dto';
+import { USER_ROLE } from '@shared/enum/user.enum';
 
 @Injectable()
 export class UserService extends AbstractBaseService<User, UserQueryDto> {
@@ -30,18 +33,30 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
     super(userRepository);
   }
   protected async beforeSave(originalEntity: User, entity: User, action: string): Promise<User> {
-    console.log('originalEntity beforeSave', originalEntity);
-    console.log('action', action);
     if (action === 'create') {
       entity.password = '123456Abc#';
+      entity.role = USER_ROLE.STUDENT;
     }
     return Promise.resolve(entity);
   }
-  protected async afterCompleted(originalEntity: User, savedEntity: User, action: string): Promise<User> {
-    console.log('afterCompleted', originalEntity);
-    console.log('action', action);
-    return Promise.resolve(savedEntity);
+  protected async populateSavedEntity(savedEntity: User): Promise<Partial<User>> {
+    return Promise.resolve(plainToInstance(UserResponeDto, savedEntity));
   }
+  protected async checkDuplicateRecord(entity: User, action): Promise<boolean> {
+    if (action === 'create') {
+      const existingUser = await this.repository.findOne({
+        where: {
+          email: entity.email,
+        },
+      });
+      if (existingUser) {
+        throw new ConflictException('User email already exists');
+      }
+    }
+
+    return true;
+  }
+
   protected async populateSearchOptions(searchParams: UserQueryDto): Promise<FindManyOptions> {
     const options = await super.populateSearchOptions(searchParams);
     if (searchParams?.keyword) {
@@ -248,6 +263,7 @@ export class UserService extends AbstractBaseService<User, UserQueryDto> {
         'classEnrollment.enrollmentDate',
         'examResult.id',
         'examResult.result',
+        'exam.id',
         'exam.name',
         'feedback.content',
         'feedback.createdAt',

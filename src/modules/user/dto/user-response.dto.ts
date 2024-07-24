@@ -4,7 +4,7 @@ import { USER_ROLE } from '@shared/enum/user.enum';
 @Exclude()
 export class UserResponeDto {
   @Expose()
-  id: string;
+  id: number;
 
   @Expose()
   fullName: string;
